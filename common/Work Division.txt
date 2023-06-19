@@ -1,0 +1,9 @@
+Hamza Siddiqui:
+	Primary =>SQL
+	Secondary =>Dashboard
+Talha Yunus:
+	Primary =>Dashboard
+	Secondary =>NLP
+Asad Kamal:
+	Primary =>NLP
+	Secondary =>SQL
