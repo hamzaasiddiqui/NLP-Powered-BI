@@ -1,4 +1,10 @@
-
+-- 
+-- IN SQL SHELL:
+-- create database nlp_bi;
+-- \c nlp_bi
+-- \i <path to .sql file>
+-- \dt
+-- 
 
 DROP TABLE IF EXISTS customer_customer_demo;
 DROP TABLE IF EXISTS customer_demographics;
