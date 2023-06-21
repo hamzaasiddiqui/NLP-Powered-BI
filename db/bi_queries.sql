@@ -1,3 +1,4 @@
+-- COLLECTION OF QUERIES THAT CAN BE USED FOR THE DASHBOARD
 
 -- Total revenue generated per day
 
