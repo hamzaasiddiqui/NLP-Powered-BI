@@ -1,0 +1,3 @@
+Studied the northwind database.
+Wrote queries that can be used for the dashboard.
+Studied how to connect Postgre database with React app.
