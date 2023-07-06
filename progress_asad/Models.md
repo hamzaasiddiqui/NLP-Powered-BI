@@ -43,3 +43,29 @@ Beam search is a powerful decoding algorithm that can be used to generate text, 
   - 40GB GPU
 https://github.com/ServiceNow/picard
 https://huggingface.co/tscholak/cxmefzzi/tree/main
+
+# RESDSQL
+
+- Using seq2seq model in RESDSQL. 
+- RESDQL works by decoupling the schema linking and skeleton parsing.
+- Encoder and decoder are both seq2seq models
+- The encoder takes the natural language input and extracts meaningful information (context) from it.
+- The decoder takes this context and generates a sequence of tokens. These tokens represent the SQL queries. Skeleton parsing is done at this point as well.
+- “The encoder aims to jointly encode the question and database schema, which is generally divided into sequence encoder and graph encoder. The decoder aims to generate the SQL queries based on the output of the encoder. Due to the special format of SQL, grammar- and execution-guided decoders are studied to constrain the decoding results.”
+- RESDSQL firstly ranks the schema links based on the input natural language to select meaningful items tables and columns that are relevant to the question. This is useful when the schema is large and complex.
+
+## Skeleton parsing
+Skeleton parsing is a less detailed approach that aims to provide a high-level representation of the query structure. The skeleton typically consists of a set of SQL keywords, along with some information about the tables and columns that are involved in the query, e.g. select, from, where, etc.
+
+## Pros:
+- The decoupling of schema linking and skeleton parsing makes the task of Text-to-SQL parsing easier for the seq2seq model.
+- The ranking of schema items according to their relevance to the given question helps to improve the accuracy of the schema linking task.
+- The implicit constraints imposed by the skeleton on the SQL parsing task help to improve the robustness of the parser.
+
+## Cons:
+- It is very complex than traditional Text-to-SQL parsers, which makes it more difficult to train and deploy.
+- It requires a lot of parameters (around 3 billion) to tune as it is a pretty large model so it requires a lot of resources.
+
+## Requirements:
+This model is trained on an 80GB GPU(A100) so it will be pretty difficult to use this model as we don’t have the resources to train this model.
+https://github.com/RUCKBReasoning/RESDSQL
