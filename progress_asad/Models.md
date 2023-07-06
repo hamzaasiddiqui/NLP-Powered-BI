@@ -39,5 +39,7 @@ Beam search is a powerful decoding algorithm that can be used to generate text, 
 - It starts with a single sequence, and then expands the sequence by adding the next most likely token.
 - The algorithm maintains a set of the top-k most likely sequences, and then repeats this process until the end of the sequence isreached, or until the beam size is exhausted.
 
-  ## Requirement
+## Requirement
   - 40GB GPU
+https://github.com/ServiceNow/picard
+https://huggingface.co/tscholak/cxmefzzi/tree/main
