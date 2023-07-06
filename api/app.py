@@ -26,12 +26,43 @@ BEST_SELLING_PRODUCT = (
         LIMIT 1;"""
 )
 
-# Load .env file
-load_dotenv()
+TOP_CITIES = (
+    """SELECT city, COUNT(*) AS customer_count
+        FROM customers
+        GROUP BY city
+        ORDER BY customer_count DESC
+        LIMIT 5;"""
+)
+
+ORDERS_PER_DAY = (
+    """SELECT order_date, COUNT(*) AS order_count
+        FROM orders
+        GROUP BY order_date
+        ORDER BY order_date;"""
+)
+
+TOP_CATEGORIES = (
+    """SELECT c.category_name, COUNT(o.order_id) AS order_count
+        FROM categories AS c
+        JOIN products AS p ON c.category_id = p.category_id
+        JOIN order_details AS od ON p.product_id = od.product_id
+        JOIN orders AS o ON od.order_id = o.order_id
+        GROUP BY c.category_name
+        ORDER BY order_count DESC
+        LIMIT 5;"""
+)
 
 app = Flask(__name__)
-url = os.getenv("DATABASE_URL")
-connection = psycopg2.connect(url)
+
+try:
+    # Load .env file
+    load_dotenv()
+    # Retrieve database url
+    url = os.getenv("DATABASE_URL")
+    # Connect to database
+    connection = psycopg2.connect(url)
+except psycopg2.Error as e:
+    print('ERROR! Cannot connect to database. Check database url.', str(e))
 
 # Defining endpoints
 @app.get("/")
@@ -62,4 +93,31 @@ def get_best_selling_product():
         "Product ID": str(product_id), 
         "Product Name": product_name, 
         "Product Revenue": str(product_revenue)
+    }
+
+@app.get("/api/topCities")
+def get_top_cities():
+    with connection.cursor() as cursor:
+        cursor.execute(TOP_CITIES)
+        top_cities = cursor.fetchall()
+    return {
+        "Top cities": top_cities
+    }
+
+@app.get("/api/ordersPerDay")
+def get_orders_per_day():
+    with connection.cursor() as cursor:
+        cursor.execute(ORDERS_PER_DAY)
+        orders = cursor.fetchall()
+    return {
+        "Orders per day": orders
+    }
+
+@app.get("/api/topCategories")
+def get_top_categories():
+    with connection.cursor() as cursor:
+        cursor.execute(TOP_CATEGORIES)
+        top_categories = cursor.fetchall()
+    return {
+        "Top categories": top_categories
     }

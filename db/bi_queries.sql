@@ -41,3 +41,26 @@ GROUP BY
     region
 ORDER BY
     percentage DESC;
+
+-- Top 5 cities according to customer count
+SELECT city, COUNT(*) AS customer_count
+FROM customers
+GROUP BY city
+ORDER BY customer_count DESC
+LIMIT 5;
+
+-- Number of orders per day
+SELECT order_date, COUNT(*) AS order_count
+FROM orders
+GROUP BY order_date
+ORDER BY order_date;
+
+-- Top 5 most ordered categories
+SELECT c.category_name, COUNT(o.order_id) AS order_count
+FROM categories AS c
+JOIN products AS p ON c.category_id = p.category_id
+JOIN order_details AS od ON p.product_id = od.product_id
+JOIN orders AS o ON od.order_id = o.order_id
+GROUP BY c.category_name
+ORDER BY order_count DESC
+LIMIT 5;
