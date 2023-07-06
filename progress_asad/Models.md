@@ -69,3 +69,37 @@ Skeleton parsing is a less detailed approach that aims to provide a high-level r
 ## Requirements:
 This model is trained on an 80GB GPU(A100) so it will be pretty difficult to use this model as we don’t have the resources to train this model.
 https://github.com/RUCKBReasoning/RESDSQL
+
+
+
+# Graphix-T5
+It performs text-to-SQL parsing that combines the strengths of pre-trained transformers with graph-aware layers.
+Uses 2 pre-trained transformers:
+- T5: The T5 model is a text-to-text transformer model that is pre-trained on a large corpus of text and code. The T5 model is used to encode the natural language question and to generate the SQL query.
+- Graph-aware transformer: The graph-aware transformer is a novel transformer model that is designed to reason over the structure of the database. The graph-aware transformer is used to generate the SQL query by reasoning over the graph representation of the database.
+It is first trained on T5 and then fine tuned on text-to-SQL queries.
+The model can work on unseen databases hence is generalizable.
+The T5 model acts as an encoder and the Graph-aware model acts as the decoder
+Some of the key steps involved in the working of Graphix-T5:
+- The natural language question is first parsed into a sequence of tokens.
+- The tokens are then encoded by the pre-trained transformer encoder.
+- The encoded hidden states are then passed to the graph-aware decoder.
+- The graph-aware decoder generates the SQL query by reasoning over the graph representation of the database.
+- The generated SQL query is then executed against the database to retrieve the desired results.
+## Graph aware layers:
+Graph-aware layers are a type of neural network layer that is designed to be aware of the graph structure of the input data. This means that the layer can take into account the relationships between entities in the graph when making predictions. The graph-aware layers can then be used to reason over the graph and to generate more accurate predictions.
+One common approach to implement the model is by using a graph neural network (GNN). GNNs are a type of neural network that can be used to process graph-structured data. GNNs work by propagating information through the graph, taking into account the relationships between entities.
+Another approach to implementing graph-aware layers is to use a transformer model. Transformer models are a type of neural network that are typically used for natural language processing tasks. However, transformers can also be used to process graph-structured data. This is done by representing the graph as a sequence of tokens, and then using the transformer model to encode the sequence.
+## Pros:
+•	Graphix-T5 is able to generalize well to unseen databases.
+•	They can help to capture the structural relationships between entities in a graph.
+•	They can be used to reason over the graph and to generate more accurate predictions.
+
+## Cons:
+•	They can be computationally expensive to train and to use.
+•	They can be difficult to interpret.
+•	They may not be appropriate for all NLP tasks that involve graphs.
+## Resources:
+Same as RESDSQL
+DAMO-ConvAI/graphix at main · AlibabaResearch/DAMO-ConvAI · GitHub
+2301.07507.pdf (arxiv.org)
