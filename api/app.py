@@ -1,0 +1,123 @@
+# Create virtual environment
+# Install libraries from requirements.txt in venv
+# pip intall -r requirements.txt
+# Run flask app and test on Insomnia or Postman
+
+import os
+import psycopg2
+from dotenv import load_dotenv
+from flask import Flask
+
+# Queries
+REVENUE_PER_DAY = (
+    """SELECT DATE_TRUNC('day', o.order_date) AS day, SUM(od.quantity * od.unit_price) AS revenue
+        FROM orders AS o
+        JOIN order_details AS od ON o.order_id = od.order_id
+        GROUP BY DATE_TRUNC('day', o.order_date)
+        ORDER BY DATE_TRUNC('day', o.order_date);"""
+)
+
+BEST_SELLING_PRODUCT = (
+    """SELECT p.product_id, p.product_name, SUM(od.quantity * od.unit_price) AS total_revenue
+        FROM products AS p
+        JOIN order_details AS od ON p.product_id = od.product_id
+        GROUP BY p.product_id, p.product_name
+        ORDER BY total_revenue DESC
+        LIMIT 1;"""
+)
+
+TOP_CITIES = (
+    """SELECT city, COUNT(*) AS customer_count
+        FROM customers
+        GROUP BY city
+        ORDER BY customer_count DESC
+        LIMIT 5;"""
+)
+
+ORDERS_PER_DAY = (
+    """SELECT order_date, COUNT(*) AS order_count
+        FROM orders
+        GROUP BY order_date
+        ORDER BY order_date;"""
+)
+
+TOP_CATEGORIES = (
+    """SELECT c.category_name, COUNT(o.order_id) AS order_count
+        FROM categories AS c
+        JOIN products AS p ON c.category_id = p.category_id
+        JOIN order_details AS od ON p.product_id = od.product_id
+        JOIN orders AS o ON od.order_id = o.order_id
+        GROUP BY c.category_name
+        ORDER BY order_count DESC
+        LIMIT 5;"""
+)
+
+app = Flask(__name__)
+
+try:
+    # Load .env file
+    load_dotenv()
+    # Retrieve database url
+    url = os.getenv("DATABASE_URL")
+    # Connect to database
+    connection = psycopg2.connect(url)
+except psycopg2.Error as e:
+    print('ERROR! Cannot connect to database. Check database url.', str(e))
+
+# Defining endpoints
+@app.get("/")
+def home():
+    return "NLP Powered BI"
+
+@app.get("/api/revenue")
+def get_revenue_per_day():
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(REVENUE_PER_DAY)
+            revenue = cursor.fetchall()
+    return {
+        "Revenue": revenue
+    }
+
+@app.get("/api/bestSellingProd")
+def get_best_selling_product():
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(BEST_SELLING_PRODUCT)
+            product_id = cursor.fetchone()[0]
+            cursor.execute(BEST_SELLING_PRODUCT)
+            product_name = cursor.fetchone()[1]
+            cursor.execute(BEST_SELLING_PRODUCT)
+            product_revenue = cursor.fetchone()[2]
+    return {
+        "Product ID": str(product_id), 
+        "Product Name": product_name, 
+        "Product Revenue": str(product_revenue)
+    }
+
+@app.get("/api/topCities")
+def get_top_cities():
+    with connection.cursor() as cursor:
+        cursor.execute(TOP_CITIES)
+        top_cities = cursor.fetchall()
+    return {
+        "Top cities": top_cities
+    }
+
+@app.get("/api/ordersPerDay")
+def get_orders_per_day():
+    with connection.cursor() as cursor:
+        cursor.execute(ORDERS_PER_DAY)
+        orders = cursor.fetchall()
+    return {
+        "Orders per day": orders
+    }
+
+@app.get("/api/topCategories")
+def get_top_categories():
+    with connection.cursor() as cursor:
+        cursor.execute(TOP_CATEGORIES)
+        top_categories = cursor.fetchall()
+    return {
+        "Top categories": top_categories
+    }

@@ -1,0 +1,7 @@
+flask
+
+# TO TURN ON DEBUG MODE
+python-dotenv
+
+# TO CONNECT TO THE DATABASE
+psycopg2-binary
