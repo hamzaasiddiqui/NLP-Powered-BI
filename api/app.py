@@ -7,6 +7,8 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 from flask import Flask
+from flask import jsonify
+from flask_cors import CORS
 
 # Queries
 REVENUE_PER_DAY = (
@@ -53,6 +55,7 @@ TOP_CATEGORIES = (
 )
 
 app = Flask(__name__)
+CORS(app)
 
 try:
     # Load .env file
@@ -89,11 +92,11 @@ def get_best_selling_product():
             product_name = cursor.fetchone()[1]
             cursor.execute(BEST_SELLING_PRODUCT)
             product_revenue = cursor.fetchone()[2]
-    return {
+    return jsonify({
         "Product ID": str(product_id), 
         "Product Name": product_name, 
         "Product Revenue": str(product_revenue)
-    }
+    })
 
 @app.get("/api/topCities")
 def get_top_cities():
