@@ -10,7 +10,7 @@ ORDER BY DATE_TRUNC('day', o.order_date);
 
 -- Top 5 top-selling products (that generated highest revenue)
 
-SELECT p.product_id, p.product_name, SUM(od.quantity * od.unit_price) AS total_revenue
+SELECT p.product_id, p.product_name, ROUND(SUM(od.quantity * od.unit_price)) AS total_revenue
 FROM products AS p
 JOIN order_details AS od ON p.product_id = od.product_id
 GROUP BY p.product_id, p.product_name
@@ -64,3 +64,26 @@ JOIN orders AS o ON od.order_id = o.order_id
 GROUP BY c.category_name
 ORDER BY order_count DESC
 LIMIT 5;
+
+-- Total revenue
+SELECT SUM((od.unit_price - p.unit_price) * od.quantity) AS total_profit
+FROM order_details AS od
+JOIN products AS p ON od.product_id = p.product_id;
+
+-- Total customers
+SELECT COUNT(*) AS total_customers
+FROM customers;
+
+-- Total revenue
+SELECT ROUND(SUM(od.unit_price * od.quantity)) AS TotalRevenue
+FROM order_details as od;
+
+-- Total profit
+SELECT ROUND(SUM(od.unit_price * od.quantity) - SUM(p.unit_price * od.quantity)) AS Profit
+FROM order_details AS od
+INNER JOIN orders AS o ON od.order_id = o.order_id
+INNER JOIN products AS p ON od.product_id = p.product_id;
+
+-- Total orders
+SELECT COUNT(*) AS TotalOrders
+FROM orders;

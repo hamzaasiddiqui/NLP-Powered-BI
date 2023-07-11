@@ -54,8 +54,32 @@ TOP_CATEGORIES = (
         LIMIT 5;"""
 )
 
+TOTAL_CUSTOMERS = (
+    """SELECT COUNT(*) AS total_customers
+        FROM customers;"""
+)
+
+TOTAL_REVENUE = (
+    """SELECT ROUND(SUM(od.unit_price * od.quantity)) AS TotalRevenue
+        FROM order_details as od;"""
+)
+
+TOTAL_PROFIT = (
+    """SELECT ROUND(SUM(od.unit_price * od.quantity) - SUM(p.unit_price * od.quantity)) AS Profit
+        FROM order_details AS od
+        INNER JOIN orders AS o ON od.order_id = o.order_id
+        INNER JOIN products AS p ON od.product_id = p.product_id;"""
+)
+
+TOTAL_ORDERS = (
+    """SELECT COUNT(*) AS TotalOrders
+        FROM orders;"""
+)
+
 app = Flask(__name__)
+
 CORS(app)
+app.config['CORS_HEADER'] = 'Content-Type'
 
 try:
     # Load .env file
@@ -123,4 +147,40 @@ def get_top_categories():
         top_categories = cursor.fetchall()
     return {
         "Top categories": top_categories
+    }
+
+@app.get("/api/totalCustomers")
+def get_total_customers():
+    with connection.cursor() as cursor:
+        cursor.execute(TOTAL_CUSTOMERS)
+        top_customers = cursor.fetchall()
+    return {
+        "Total Customers": top_customers
+    }
+
+@app.get("/api/totalRevenue")
+def get_total_revenue():
+    with connection.cursor() as cursor:
+        cursor.execute(TOTAL_REVENUE)
+        total_revenue = cursor.fetchone()
+    return {
+        "Total Revenue": total_revenue
+    }
+
+@app.get("/api/totalProfit")
+def get_total_profit():
+    with connection.cursor() as cursor:
+        cursor.execute(TOTAL_PROFIT)
+        total_profit = cursor.fetchone()
+    return {
+        "Total Profit": total_profit
+    }
+
+@app.get("/api/totalOrders")
+def get_total_orders():
+    with connection.cursor() as cursor:
+        cursor.execute(TOTAL_ORDERS)
+        total_orders = cursor.fetchone()
+    return {
+        "Total Orders": total_orders
     }

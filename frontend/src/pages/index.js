@@ -10,10 +10,58 @@ import { OverviewTasksProgress } from 'src/sections/overview/overview-tasks-prog
 import { OverviewTotalCustomers } from 'src/sections/overview/overview-total-customers';
 import { OverviewTotalProfit } from 'src/sections/overview/overview-total-profit';
 import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
+import { useEffect, useState } from 'react';
+import { OverviewCard } from 'src/sections/overview/overview-card';
+
+const apiUrl = "http://localhost:5000";
 
 const now = new Date();
 
 const Page = () => {
+  const [totalCustomers, setTotalCustomers] = useState(null);
+  const [totalRevenue, setTotalRevenue] = useState(null);
+  const [totalProfit, setTotalProfit] = useState(null);
+  const [totalOrders, setTotalOrders] = useState(null);
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/totalCustomers")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Total Customers'][0])
+      const totalCustomersValue = data['Total Customers'][0];
+      setTotalCustomers(totalCustomersValue);
+      })
+  )}, []);
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/totalRevenue")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Total Revenue'][0])
+      const totalRevenueValue = data['Total Revenue'][0];
+      setTotalRevenue(totalRevenueValue);
+    })
+  )}, [])
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/totalProfit")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Total Profit'][0])
+      const totalProfitValue = data['Total Profit'][0];
+      setTotalProfit(totalProfitValue);
+    })
+  )}, [])
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/totalOrders")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Total Orders'][0])
+      const totalOrdersValue = data['Total Orders'][0];
+      setTotalOrders(totalOrdersValue);
+    })
+  )}, [])
 
   return (
     <>
@@ -39,11 +87,11 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewBudget
-              difference={12}
-              positive
+            <OverviewCard
               sx={{ height: '100%' }}
-              value="$24k"
+              title="Total Revenue"
+              value={totalRevenue}
+              symbol=" $"
             />
           </Grid>
           <Grid
@@ -51,11 +99,11 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewTotalCustomers
-              difference={16}
-              positive={false}
+            <OverviewCard
               sx={{ height: '100%' }}
-              value="1.6k"
+              title='Total Profit'
+              value={totalProfit}
+              symbol=" $"
             />
           </Grid>
           <Grid
@@ -63,9 +111,10 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewTasksProgress
+            <OverviewCard
               sx={{ height: '100%' }}
-              value={75.5}
+              title='Total Customers'
+              value={totalCustomers}
             />
           </Grid>
           <Grid
@@ -73,9 +122,10 @@ const Page = () => {
             sm={6}
             lg={3}
           >
-            <OverviewTotalProfit
+            <OverviewCard
               sx={{ height: '100%' }}
-              value="$15k"
+              title='Total Orders'
+              value={totalOrders}
             />
           </Grid>
           <Grid
