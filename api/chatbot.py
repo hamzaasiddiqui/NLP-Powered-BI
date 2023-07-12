@@ -28,7 +28,7 @@ POSTGRES_PROMPT = PromptTemplate(
             input_variables=["input", "table_info", "top_k"],
             template=_postgres_prompt + PROMPT_SUFFIX,
         )
-llm = ChatOpenAI(temperature=0.5, openai_api_key="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")
+llm = ChatOpenAI(temperature=0.5, openai_api_key="")
 engine = sqlalchemy.create_engine("postgresql+psycopg2://puttplgt:BliGMxjlgIxuqLudrJb56yVWm8p1Uq5U@lucky.db.elephantsql.com/puttplgt", pool_pre_ping=True)
 db = SQLDatabase(engine=engine)
 class chatbot:
