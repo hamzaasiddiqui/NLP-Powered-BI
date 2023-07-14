@@ -22,6 +22,9 @@ const Page = () => {
   const [totalRevenue, setTotalRevenue] = useState(null);
   const [totalProfit, setTotalProfit] = useState(null);
   const [totalOrders, setTotalOrders] = useState(null);
+  const [topProducts, setTopProducts] = useState(null);
+  const [latestOrders, setLatestOrders] = useState(null);
+  const [revenue, setRevenue] = useState(null);
 
   useEffect(() => {
     fetch(apiUrl + "/api/totalCustomers")
@@ -60,6 +63,46 @@ const Page = () => {
       console.log(data['Total Orders'][0])
       const totalOrdersValue = data['Total Orders'][0];
       setTotalOrders(totalOrdersValue);
+    })
+  )}, [])
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/bestSellingProds")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Products'])
+      const productsValue = data['Products'];
+      console.log(productsValue)
+      setTopProducts(productsValue);
+      console.log(topProducts)
+    })
+  )}, [])
+
+  // useEffect(() => {
+  //   console.log(topProducts);
+  // }, [topProducts]);
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/latestOrders")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Latest Orders'])
+      const ordersValue = data['Latest Orders'];
+      console.log(ordersValue)
+      setLatestOrders(ordersValue);
+      console.log(latestOrders)
+    })
+  )}, [])
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/revenuePerMonth")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Revenue'])
+      const revenueValue = data['Revenue'];
+      console.log(revenueValue)
+      setRevenue(revenueValue);
+      console.log(revenue)
     })
   )}, [])
 
@@ -132,19 +175,20 @@ const Page = () => {
             xs={12}
             lg={8}
           >
+            { revenue != null && (
             <OverviewSales
               chartSeries={[
                 {
                   name: 'This year',
-                  data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20]
+                  data: [revenue[13][1], revenue[14][1], revenue[15][1], revenue[16][1], 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 {
                   name: 'Last year',
-                  data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13]
+                  data: [revenue[0][1], revenue[1][1], revenue[2][1], revenue[3][1], revenue[4][1], revenue[5][1], revenue[6][1], revenue[7][1], revenue[8][1], revenue[9][1], revenue[10][1], revenue[11][1], revenue[12][1]]
                 }
               ]}
               sx={{ height: '100%' }}
-            />
+            />)}
           </Grid>
           <Grid
             xs={12}
@@ -162,112 +206,110 @@ const Page = () => {
             md={6}
             lg={4}
           >
+          { topProducts != null && (
             <OverviewLatestProducts
               products={[
                 {
-                  id: '5ece2c077e39da27658aa8a9',
-                  image: '/assets/products/product-1.png',
-                  name: 'Healthcare Erbology',
-                  updatedAt: subHours(now, 6).getTime()
+                  id: topProducts[0][0],
+                  name: topProducts[0][1],
+                  revenue: topProducts[0][2]
                 },
                 {
-                  id: '5ece2c0d16f70bff2cf86cd8',
-                  image: '/assets/products/product-2.png',
-                  name: 'Makeup Lancome Rouge',
-                  updatedAt: subDays(subHours(now, 8), 2).getTime()
+                  id: topProducts[1][0],
+                  name: topProducts[1][1],
+                  revenue: topProducts[1][2]
                 },
                 {
-                  id: 'b393ce1b09c1254c3a92c827',
-                  image: '/assets/products/product-5.png',
-                  name: 'Skincare Soja CO',
-                  updatedAt: subDays(subHours(now, 1), 1).getTime()
+                  id: topProducts[2][0],
+                  name: topProducts[2][1],
+                  revenue: topProducts[2][2]
                 },
                 {
-                  id: 'a6ede15670da63f49f752c89',
-                  image: '/assets/products/product-6.png',
-                  name: 'Makeup Lipstick',
-                  updatedAt: subDays(subHours(now, 3), 3).getTime()
+                  id: topProducts[3][0],
+                  name: topProducts[3][1],
+                  revenue: topProducts[3][2]
                 },
                 {
-                  id: 'bcad5524fe3a2f8f8620ceda',
-                  image: '/assets/products/product-7.png',
-                  name: 'Healthcare Ritual',
-                  updatedAt: subDays(subHours(now, 5), 6).getTime()
+                  id: topProducts[4][0],
+                  name: topProducts[4][1],
+                  revenue: topProducts[4][2]
                 }
               ]}
               sx={{ height: '100%' }}
-            />
+            />)}
           </Grid>
+          
           <Grid
             xs={12}
             md={12}
             lg={8}
           >
+            { latestOrders != null && (
             <OverviewLatestOrders
               orders={[
                 {
                   id: 'f69f88012978187a6c12897f',
-                  ref: 'DEV1049',
+                  ref: latestOrders[0][0],
                   amount: 30.5,
                   customer: {
-                    name: 'Ekaterina Tankova'
+                    name: latestOrders[0][1]
                   },
-                  createdAt: 1555016400000,
-                  status: 'pending'
+                  createdAt: latestOrders[0][2],
+                  status: latestOrders[0][3],
                 },
                 {
                   id: '9eaa1c7dd4433f413c308ce2',
-                  ref: 'DEV1048',
+                  ref: latestOrders[1][0],
                   amount: 25.1,
                   customer: {
-                    name: 'Cao Yu'
+                    name: latestOrders[1][1]
                   },
-                  createdAt: 1555016400000,
-                  status: 'delivered'
+                  createdAt: latestOrders[1][2],
+                  status: latestOrders[1][3]
                 },
                 {
                   id: '01a5230c811bd04996ce7c13',
-                  ref: 'DEV1047',
+                  ref: latestOrders[2][0],
                   amount: 10.99,
                   customer: {
-                    name: 'Alexa Richardson'
+                    name: latestOrders[2][1],
                   },
-                  createdAt: 1554930000000,
-                  status: 'refunded'
+                  createdAt: latestOrders[2][2],
+                  status: latestOrders[2][3]
                 },
                 {
                   id: '1f4e1bd0a87cea23cdb83d18',
-                  ref: 'DEV1046',
+                  ref: latestOrders[3][0],
                   amount: 96.43,
                   customer: {
-                    name: 'Anje Keizer'
+                    name: latestOrders[3][1],
                   },
-                  createdAt: 1554757200000,
-                  status: 'pending'
+                  createdAt: latestOrders[3][2],
+                  status: latestOrders[3][3],
                 },
                 {
                   id: '9f974f239d29ede969367103',
-                  ref: 'DEV1045',
+                  ref: latestOrders[4][0],
                   amount: 32.54,
                   customer: {
-                    name: 'Clarke Gillebert'
+                    name: latestOrders[4][1],
                   },
-                  createdAt: 1554670800000,
-                  status: 'delivered'
+                  createdAt: latestOrders[4][2],
+                  status: latestOrders[4][3],
                 },
                 {
                   id: 'ffc83c1560ec2f66a1c05596',
-                  ref: 'DEV1044',
+                  ref: latestOrders[5][0],
                   amount: 16.76,
                   customer: {
-                    name: 'Adam Denisov'
+                    name: latestOrders[5][1],
                   },
-                  createdAt: 1554670800000,
-                  status: 'delivered'
+                  createdAt: latestOrders[5][2],
+                  status: latestOrders[5][3],
                 }
               ]}
               sx={{ height: '100%' }}
-            />
+            />)}
           </Grid>
         </Grid>
       </Container>

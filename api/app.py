@@ -19,13 +19,13 @@ REVENUE_PER_DAY = (
         ORDER BY DATE_TRUNC('day', o.order_date);"""
 )
 
-BEST_SELLING_PRODUCT = (
-    """SELECT p.product_id, p.product_name, SUM(od.quantity * od.unit_price) AS total_revenue
+BEST_SELLING_PRODUCTS = (
+    """SELECT p.product_id, p.product_name, ROUND(SUM(od.quantity * od.unit_price)) AS total_revenue
         FROM products AS p
         JOIN order_details AS od ON p.product_id = od.product_id
         GROUP BY p.product_id, p.product_name
         ORDER BY total_revenue DESC
-        LIMIT 1;"""
+        LIMIT 5;"""
 )
 
 TOP_CITIES = (
@@ -76,6 +76,40 @@ TOTAL_ORDERS = (
         FROM orders;"""
 )
 
+LATEST_ORDERS = (
+        """SELECT
+                o.order_id,
+                c.company_name,
+                o.order_date,
+                CASE
+                    WHEN o.shipped_date IS NULL THEN 'Not Shipped'
+                    ELSE 'Shipped'
+                END AS status
+            FROM
+                orders AS o
+            JOIN
+                customers AS c ON o.customer_id = c.customer_id
+            ORDER BY
+                o.order_date DESC
+            LIMIT 6;"""
+)
+
+REVENUE_PER_MONTH = (
+    """SELECT
+            DATE_TRUNC('month', o.order_date) AS month,
+            ROUND(SUM(od.unit_price * od.quantity)) AS total_revenue
+        FROM
+            orders AS o
+        JOIN
+            order_details AS od ON o.order_id = od.order_id
+        WHERE
+            o.order_date >= (CURRENT_DATE - INTERVAL '18 months')
+        GROUP BY
+            DATE_TRUNC('month', o.order_date)
+        ORDER BY
+            month;"""
+)
+
 app = Flask(__name__)
 
 CORS(app)
@@ -106,21 +140,15 @@ def get_revenue_per_day():
         "Revenue": revenue
     }
 
-@app.get("/api/bestSellingProd")
-def get_best_selling_product():
+@app.get("/api/bestSellingProds")
+def get_best_selling_products():
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute(BEST_SELLING_PRODUCT)
-            product_id = cursor.fetchone()[0]
-            cursor.execute(BEST_SELLING_PRODUCT)
-            product_name = cursor.fetchone()[1]
-            cursor.execute(BEST_SELLING_PRODUCT)
-            product_revenue = cursor.fetchone()[2]
-    return jsonify({
-        "Product ID": str(product_id), 
-        "Product Name": product_name, 
-        "Product Revenue": str(product_revenue)
-    })
+            cursor.execute(BEST_SELLING_PRODUCTS)
+            products = cursor.fetchall()
+    return {
+        "Products": products
+    }
 
 @app.get("/api/topCities")
 def get_top_cities():
@@ -183,4 +211,22 @@ def get_total_orders():
         total_orders = cursor.fetchone()
     return {
         "Total Orders": total_orders
+    }
+
+@app.get("/api/latestOrders")
+def get_latest_orders():
+    with connection.cursor() as cursor:
+        cursor.execute(LATEST_ORDERS)
+        latest_orders = cursor.fetchall()
+    return {
+        "Latest Orders": latest_orders
+    }
+
+@app.get("/api/revenuePerMonth")
+def get_revenue_per_month():
+    with connection.cursor() as cursor:
+        cursor.execute(REVENUE_PER_MONTH)
+        revenue = cursor.fetchall()
+    return {
+        "Revenue": revenue
     }

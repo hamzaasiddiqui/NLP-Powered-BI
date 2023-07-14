@@ -51,7 +51,7 @@ export const OverviewLatestOrders = (props) => {
             </TableHead>
             <TableBody>
               {orders.map((order) => {
-                const createdAt = format(order.createdAt, 'dd/MM/yyyy');
+                {/* const createdAt = format(order.createdAt, 'dd/MM/yyyy'); */}
 
                 return (
                   <TableRow
@@ -65,7 +65,7 @@ export const OverviewLatestOrders = (props) => {
                       {order.customer.name}
                     </TableCell>
                     <TableCell>
-                      {createdAt}
+                      {order.createdAt}
                     </TableCell>
                     <TableCell>
                       <SeverityPill color={statusMap[order.status]}>

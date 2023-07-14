@@ -87,3 +87,20 @@ INNER JOIN products AS p ON od.product_id = p.product_id;
 -- Total orders
 SELECT COUNT(*) AS TotalOrders
 FROM orders;
+
+-- Latest orders
+SELECT
+    o.order_id,
+    c.company_name,
+    o.order_date,
+    CASE
+        WHEN o.shipped_date IS NULL THEN 'Not Shipped'
+        ELSE 'Shipped'
+    END AS status
+FROM
+    orders AS o
+JOIN
+    customers AS c ON o.customer_id = c.customer_id
+ORDER BY
+    o.order_date DESC
+LIMIT 6;
