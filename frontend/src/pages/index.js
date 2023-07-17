@@ -25,6 +25,7 @@ const Page = () => {
   const [topProducts, setTopProducts] = useState(null);
   const [latestOrders, setLatestOrders] = useState(null);
   const [revenue, setRevenue] = useState(null);
+  const [topCategories, setTopCategories] = useState(null);
 
   useEffect(() => {
     fetch(apiUrl + "/api/totalCustomers").then((response) =>
@@ -103,6 +104,18 @@ const Page = () => {
       console.log(revenueValue)
       setRevenue(revenueValue);
       console.log(revenue)
+    })
+  )}, [])
+
+  useEffect(() => {
+    fetch(apiUrl + "/api/topCategories")
+    .then(response => response.json()
+    .then(data => {
+      console.log(data['Top categories'])
+      const categoriesValue = data['Top categories'];
+      console.log(categoriesValue)
+      setTopCategories(categoriesValue);
+      console.log(topCategories)
     })
   )}, [])
 
@@ -195,11 +208,12 @@ const Page = () => {
             md={6}
             lg={4}
           >
+            { topCategories != null && (
             <OverviewTraffic
-              chartSeries={[63, 15, 22]}
-              labels={['Desktop', 'Tablet', 'Phone']}
+              chartSeries={[topCategories[0][1], topCategories[1][1], topCategories[2][1]]}
+              labels={[topCategories[0][0], topCategories[1][0], topCategories[2][0]]}
               sx={{ height: '100%' }}
-            />
+            />)}
           </Grid>
           <Grid
             xs={12}

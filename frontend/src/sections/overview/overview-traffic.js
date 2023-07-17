@@ -86,13 +86,13 @@ export const OverviewTraffic = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Traffic Source" />
+      <CardHeader title="Most Ordered Categories" />
       <CardContent>
         <Chart
           height={300}
           options={chartOptions}
           series={chartSeries}
-          type="donut"
+          type="pie"
           width="100%"
         />
         <Stack
@@ -125,7 +125,7 @@ export const OverviewTraffic = (props) => {
                   color="text.secondary"
                   variant="subtitle2"
                 >
-                  {item}%
+                  {item}{''}orders
                 </Typography>
               </Box>
             );

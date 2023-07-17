@@ -153,6 +153,16 @@ def chatbot():
     else:
         return 'Invalid query', 400
    
+try:
+    # Load .env file
+    load_dotenv()
+    # Retrieve database url
+    url = os.getenv("DATABASE_URL")
+    # Connect to database
+    connection = psycopg2.connect(url)
+except psycopg2.Error as e:
+    print('ERROR! Cannot connect to database. Check database url.', str(e))
+
 @app.get("/")
 def home():
     return "NLP Powered BI"
