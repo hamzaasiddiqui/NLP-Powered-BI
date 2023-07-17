@@ -69,7 +69,6 @@ const Page = () => {
         <title>Overview | Keystone</title>
       </Head>
       <Chatbot/>
-      <Chatbot/>
       <Box
         component="main"
         sx={{

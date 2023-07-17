@@ -109,6 +109,7 @@ const Chatbot = () => {
           sx={{
             borderRadius: 4,
             maxHeight: 700,
+            maxWidth: 700,
             overflowY: "scroll",
             p: 4,
             boxShadow: 10,
