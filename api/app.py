@@ -8,7 +8,7 @@ import psycopg2
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from chatbot import db_chain
+
 # Queries
 REVENUE_PER_DAY = (
     """SELECT DATE_TRUNC('day', o.order_date) AS day, SUM(od.quantity * od.unit_price) AS revenue
@@ -143,6 +143,7 @@ def handle_query():
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
+    from chatbot import db_chain
     query = request.get_json().get('query')
     if query:
         result = db_chain(query)
