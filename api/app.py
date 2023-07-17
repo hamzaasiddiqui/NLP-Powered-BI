@@ -6,10 +6,9 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
-from flask import Flask
-from flask import jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-
+from chatbot import db_chain
 # Queries
 REVENUE_PER_DAY = (
     """SELECT DATE_TRUNC('day', o.order_date) AS day, SUM(od.quantity * od.unit_price) AS revenue
@@ -115,17 +114,44 @@ app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADER'] = 'Content-Type'
 
-try:
-    # Load .env file
-    load_dotenv()
-    # Retrieve database url
-    url = os.getenv("DATABASE_URL")
-    # Connect to database
-    connection = psycopg2.connect(url)
-except psycopg2.Error as e:
-    print('ERROR! Cannot connect to database. Check database url.', str(e))
+# Retrieve database URL from environment variable
+db_url = os.getenv('DATABASE_URL')
 
-# Defining endpoints
+# Helper function to execute SQL queries
+def execute_query(query):
+    try:
+        connection = psycopg2.connect(db_url)
+        cursor = connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return result
+    except psycopg2.Error as e:
+        return str(e)
+
+# Endpoint to handle SQL queries
+@app.route('/query', methods=['POST'])
+def handle_query():
+    query = request.get_json().get('query')
+    if query:
+        result = execute_query(query)
+        return jsonify(result)
+    else:
+        return 'Invalid query', 400
+    
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    query = request.get_json().get('query')
+    if query:
+        result = db_chain(query)
+        print(result)
+        print(result['result'])
+        return jsonify(result['result'])
+    else:
+        return 'Invalid query', 400
+   
 @app.get("/")
 def home():
     return "NLP Powered BI"
