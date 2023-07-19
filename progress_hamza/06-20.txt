@@ -1,5 +1,0 @@
-Made a local PostgreSQL database (nlp_bi).
-Found northwind dataset online.
-Populated the database with the northwind dataset.
-Pushed relevant files (.sql and schema png) to database branch.
-Practised sql and wrote sql queries that can be used for the dashboard.   
