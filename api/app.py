@@ -267,3 +267,14 @@ def get_revenue_per_month():
     return {
         "Revenue": revenue
     }
+
+
+# if __name__ == '__main__':
+#     # Load .env file
+#     load_dotenv()
+#     # Retrieve database url
+#     url = os.getenv("DATABASE_URL")
+#     # Connect to database
+#     connection = psycopg2.connect(url)
+
+#     app.run(debug=True)

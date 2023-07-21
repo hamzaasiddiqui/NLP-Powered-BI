@@ -1,45 +1,165 @@
 from langchain.chat_models import ChatOpenAI
-from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
+from langchain import OpenAI
 import os
 import sqlalchemy
+from langchain.chains import LLMChain
 from langchain.prompts.prompt import PromptTemplate
+from schema import execute_query, get_schema_info
+question = "what are the top 5 most sold items."
 
-PROMPT_SUFFIX = """Only use the following tables:
-{table_info}
+db_schema = get_schema_info()
+PROMPT_SUFFIX = """
+Below is the schema of the database. Only use the following tables and columns:
+{DB_schema}
 
-Question: {input}"""
+Question: {input}
 
-_postgres_prompt = """You are a PostgreSQL expert. Given an input question, first create a syntactically correct PostgreSQL query to run, then look at the results of the query and return the answer to the input question.
-Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per PostgreSQL. You can order the results to return the most informative data in the database.
-Never query for all columns from a table. You must query only the columns that are needed to answer the question.
-Pay attention to use only the column names you can see in the tables below. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
-Pay attention to use CURRENT_DATE function to get the current date, if the question involves "today".
-Pay attention to add table name in front of column name in the SELECT statement with the format "table_name.column_name".
-
-Use the following format:
-
-Question: Question here
-SQLQuery: SQL Query to run
-SQLResult: Result of the SQLQuery
-Answer: Final answer here
-
+Query:
 """
+
+_postgres_prompt = """
+You are a PostgreSQL expert. Given an input question, create a syntactically correct PostgreSQL query. 
+
+With the following rules:
+- The SQL Query should respect the case and consider columns and tables as case-sensitive
+- The SQL Query should use quotes around table and column names containing uppercase characters
+- The SQL Query should be syntaxically correct
+- The SQL Query should be the sole content of your message
+- Pay attention to use CURRENT_DATE function to get the current date, if the question involves "today"
+- Pay attention to add table name in front of column name in the SELECT statement with the format "table_name.column_name
+- Your response should be a PostgreSQL query and nothing else.
+# """
 POSTGRES_PROMPT = PromptTemplate(
-            input_variables=["input", "table_info", "top_k"],
+            input_variables=["input", "DB_schema"],
             template=_postgres_prompt + PROMPT_SUFFIX,
         )
-llm = ChatOpenAI(temperature=0.5, openai_api_key="")
-engine = sqlalchemy.create_engine("postgresql+psycopg2://puttplgt:BliGMxjlgIxuqLudrJb56yVWm8p1Uq5U@lucky.db.elephantsql.com/puttplgt", pool_pre_ping=True)
-db = SQLDatabase(engine=engine)
-class chatbot:
-    def __init__(self):
-        self.db_chain = SQLDatabaseChain.from_llm(
-            llm=llm, 
-            db=db, 
-            prompt=POSTGRES_PROMPT, 
-            use_query_checker=False, 
-            return_intermediate_steps=True
-            )
+llm = ChatOpenAI(temperature=0.5, openai_api_key="", model='gpt-3.5-turbo')
+chain = LLMChain(llm=llm, prompt=POSTGRES_PROMPT)
+
+# Run the chain only specifying the input variable.
+sql_query = chain.run({'input': question, 
+                       'DB_schema': db_schema})
+
+# sql_query = """
+#         SELECT products.product_name, SUM(order_details.quantity) AS total_sold
+#         FROM products
+#         JOIN order_details ON products.product_id = order_details.product_id
+#         GROUP BY products.product_name
+#         ORDER BY total_sold DESC
+#         LIMIT 5;
+# """
+print(sql_query)
+result = execute_query(sql_query)
+
+print(result)
 
 
-db_chain = chatbot().db_chain
+def make_table(res, size=3):
+    max_name_length = max(len(name) for name, _ in res)
+    table_str = ""
+    for i in range(size):
+        
+        if i >= len(res):
+            break
+
+        name, number = res[i]
+        row = f"| {name:<{max_name_length}} | {number} |\n"
+        table_str += row
+
+    return table_str
+
+total = len(result)
+table = make_table(result)
+typePrompt = """
+This SQL Query: {query}
+Returned {total} row(s) in total, here is table showing a sample of the first few rows: 
+{table}
+
+What is the most appropriate representation type to best represent this data, either as a simple sentence describing the results, as a table or as a chart? Reply with either "sentence", "table" or "chart" and nothing more.
+
+Rules:
+- The type should either be "table", "sentence" or "chart"
+- The type should not exceed one word
+
+Type:
+
+  """
+
+
+
+SELECTION_PROMPT = PromptTemplate(
+            input_variables=["query", "total", "table"],
+            template=typePrompt,
+        )
+
+chain = LLMChain(llm=llm, prompt=SELECTION_PROMPT)
+type = chain.run({'query': sql_query,
+                'total': total,
+                'table': table})
+
+res = [[name, number] for name, number in result]
+if type == "chart":
+    chartObjectPrompt = """
+The {total} rows generated by the SQL query are stored in 'res'. The first three rows are: {res_}
+
+Generate the most appropriate chart using the chart.js library
+
+Rules:
+- The JS object should generate colors randomly for backgroundColors and other field about colors
+- The JS object should be top level and structured as 
+\`\`\`js
+{
+type: string,
+data: {
+    labels: list, // generate list dynamically from res.map(([labels, _]) => labels)
+    datasets: [{
+        data: list, // generate list dynamically from res.map(([_, data]) => data)
+    }]
+},
+options: object, // asign options.title.text and others dynamically
+}
+\`\`\`
+- This js object should be the sole content of the message, there should be no intermediate variables
+- The JS object should make use of data from the \`res.rows\` object to handle labels, datasets, axes title and others
+- The JS object should start with { and end with }
+- The JS object should be syntaxically correct
+
+JS Object:
+    `;
+    """
+    CHART_PROMPT = PromptTemplate(
+            input_variables=["res_", "total"],
+            template=chartObjectPrompt,
+        )
+
+    chain = LLMChain(llm=llm, prompt=CHART_PROMPT)
+    chartObj = chain.run({'res_': res[:3],
+                    'total': total})
+    
+
+
+elif type == "table":
+    make_table(result, len(result))
+
+else:
+    sentencePrompt = """
+    SQL query: {sql_query}  
+    result: {result}
+    Using the given result make a human-sounding sentence replying to the initial question which was: "{question}"
+    
+    The results should be highlighted in bold by adding ** around them.
+
+    Sentence:
+    `;
+    """
+
+    SENTENCE_PROMPT = PromptTemplate(
+            input_variables=["sql_query", "result", "question"],
+            template=sentencePrompt,
+        )
+
+    chain = LLMChain(llm=llm, prompt=SENTENCE_PROMPT)
+    chartObj = chain.run({'sql_query': sql_query,
+                    'result': result,
+                    "question" : question})
+
