@@ -193,7 +193,7 @@ const Page = () => {
               chartSeries={[
                 {
                   name: 'This year',
-                  data: [revenue[13][1], revenue[14][1], revenue[15][1], revenue[16][1], 0, 0, 0, 0, 0, 0, 0, 0]
+                  data: [revenue[13][1], revenue[14][1], revenue[15][1], 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 {
                   name: 'Last year',

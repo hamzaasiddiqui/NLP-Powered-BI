@@ -8,6 +8,7 @@ import { Box, Button, Container, Stack, TextField, Typography } from "@mui/mater
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
 import { padding } from "@mui/system";
+import {Chart} from '../components/chart2'
 
 const Page = () => {
   const [messages, setMessages] = useState([
@@ -48,8 +49,8 @@ const Page = () => {
       const response = await axios.post("http://localhost:5000/chatbot", {
         query: newMessage,
       });
-
-      const botReply = response.data;
+      
+      const botReply = <Chart data={response.data['CHART']} />;
       const botMessage = {
         id: messages.length + 2,
         text: botReply,

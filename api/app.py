@@ -265,12 +265,12 @@ def get_revenue_per_month():
     }
 
 
-# if __name__ == '__main__':
-#     # Load .env file
-#     load_dotenv()
-#     # Retrieve database url
-#     url = os.getenv("DATABASE_URL")
-#     # Connect to database
-#     connection = psycopg2.connect(url)
+if __name__ == '__main__':
+    # Load .env file
+    load_dotenv()
+    # Retrieve database url
+    url = os.getenv("DATABASE_URL")
+    # Connect to database
+    connection = psycopg2.connect(url)
 
-#     app.run(debug=True)
+    app.run(debug=True)
