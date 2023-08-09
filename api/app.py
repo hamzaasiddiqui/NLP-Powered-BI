@@ -113,14 +113,20 @@ app = Flask(__name__)
 
 CORS(app)
 app.config['CORS_HEADER'] = 'Content-Type'
-
+load_dotenv()
 # Retrieve database URL from environment variable
 db_url = os.getenv('DATABASE_URL')
+open_ai = os.getenv('OPENAI_API_KEY')
+try:
+    # Connect to database
+    connection = psycopg2.connect(db_url)
+except psycopg2.Error as e:
+    print('ERROR! Cannot connect to database. Check database url.', str(e))
+
 
 # Helper function to execute SQL queries
 def execute_query(query):
     try:
-        connection = psycopg2.connect(db_url)
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
@@ -143,25 +149,15 @@ def handle_query():
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
-    from chatbot import db_chain
+    from chatbot import chatbot
     query = request.get_json().get('query')
     if query:
-        result = db_chain(query)
+        result = chatbot(query)
         print(result)
-        print(result['result'])
-        return jsonify(result['result'])
+        return jsonify(result)
     else:
         return 'Invalid query', 400
    
-try:
-    # Load .env file
-    load_dotenv()
-    # Retrieve database url
-    url = os.getenv("DATABASE_URL")
-    # Connect to database
-    connection = psycopg2.connect(url)
-except psycopg2.Error as e:
-    print('ERROR! Cannot connect to database. Check database url.', str(e))
 
 @app.get("/")
 def home():
