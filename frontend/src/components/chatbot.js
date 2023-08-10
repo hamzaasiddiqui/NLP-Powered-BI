@@ -46,7 +46,7 @@ const Chatbot = () => {
       const response = await axios.post("http://localhost:5000/chatbot", {
         query: newMessage,
       });
-
+      
       const botReply = response.data;
       const botMessage = {
         id: messages.length + 2,

@@ -113,7 +113,7 @@ app = Flask(__name__)
 
 CORS(app)
 app.config['CORS_HEADER'] = 'Content-Type'
-
+load_dotenv()
 connection = None
 
 @app.route('/api/connectDB', methods=['POST'])
@@ -127,8 +127,21 @@ def connect_to_db():
     database = data.get('database')
     user = data.get('user')
     password = data.get('password')
+open_ai = os.getenv('OPENAI_API_KEY')
+try:
+    # Connect to database
+    connection = psycopg2.connect(db_url)
+except psycopg2.Error as e:
+    print('ERROR! Cannot connect to database. Check database url.', str(e))
+
 
     try:
+        cursor = connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return result
         if connection is None or connection.closed != 0:
             connection = psycopg2.connect(
                 host=host,
@@ -187,28 +200,17 @@ def close_db_connection():
 #         return 'Invalid query', 400
     
 
-# @app.route('/chatbot', methods=['POST'])
-# def chatbot():
-#     from chatbot import db_chain
-#     query = request.get_json().get('query')
-#     if query:
-#         result = db_chain(query)
-#         print(result)
-#         print(result['result'])
-#         return jsonify(result['result'])
-#     else:
-#         return 'Invalid query', 400
-
-### OLD CODE FOR DB CONNECTION
-# try:
-#     # Load .env file
-#     load_dotenv()
-#     # Retrieve database url
-#     url = os.getenv("DATABASE_URL")
-#     # Connect to database
-#     connection = psycopg2.connect(url)
-# except psycopg2.Error as e:
-#     print('ERROR! Cannot connect to database. Check database url.', str(e))
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    from chatbot import chatbot
+    query = request.get_json().get('query')
+    if query:
+        result = chatbot(query)
+        print(result)
+        return jsonify(result)
+    else:
+        return 'Invalid query', 400
+   
 
 @app.get("/")
 def home():
@@ -316,12 +318,12 @@ def get_revenue_per_month():
     }
 
 
-# if __name__ == '__main__':
-#     # Load .env file
-#     load_dotenv()
-#     # Retrieve database url
-#     url = os.getenv("DATABASE_URL")
-#     # Connect to database
-#     connection = psycopg2.connect(url)
+if __name__ == '__main__':
+    # Load .env file
+    load_dotenv()
+    # Retrieve database url
+    url = os.getenv("DATABASE_URL")
+    # Connect to database
+    connection = psycopg2.connect(url)
 
-#     app.run(debug=True)
+    app.run(debug=True)
