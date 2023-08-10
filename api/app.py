@@ -114,54 +114,101 @@ app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADER'] = 'Content-Type'
 
-# Retrieve database URL from environment variable
-db_url = os.getenv('DATABASE_URL')
+connection = None
 
-# Helper function to execute SQL queries
-def execute_query(query):
+@app.route('/api/connectDB', methods=['POST'])
+def connect_to_db():
+    global connection
+
+    data = request.json
+
+    host = data.get('host')
+    port = data.get('port')
+    database = data.get('database')
+    user = data.get('user')
+    password = data.get('password')
+
     try:
-        connection = psycopg2.connect(db_url)
-        cursor = connection.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
-        cursor.close()
-        connection.close()
-        return result
-    except psycopg2.Error as e:
-        return str(e)
+        if connection is None or connection.closed != 0:
+            connection = psycopg2.connect(
+                host=host,
+                port=port,
+                database=database,
+                user=user,
+                password=password
+            )
 
-# Endpoint to handle SQL queries
-@app.route('/query', methods=['POST'])
-def handle_query():
-    query = request.get_json().get('query')
-    if query:
-        result = execute_query(query)
-        return jsonify(result)
+        response_data = {'message': 'Data received successfully'}  # Create a response dictionary
+
+        return jsonify(response_data)
+    except psycopg2.Error as e:
+        # return str(e)
+        error_message = str(e)
+        return jsonify({'error': error_message}), 500
+    
+# Route to close DB connection
+# FOR FUTURE DEVELOPMENT
+@app.route('/api/disconnectDB', methods=['POST'])
+def close_db_connection():
+    global connection
+
+    if connection:
+        connection.close()
+        connection = None
+        
+        return jsonify({'Database connection successfully closed!'}), 200
     else:
-        return 'Invalid query', 400
+        return jsonify({'No active database connection to close!'})
+
+# # Retrieve database URL from environment variable
+# db_url = os.getenv('DATABASE_URL')
+
+# # Helper function to execute SQL queries
+# def execute_query(query):
+#     try:
+#         connection = psycopg2.connect(db_url)
+#         cursor = connection.cursor()
+#         cursor.execute(query)
+#         result = cursor.fetchall()
+#         cursor.close()
+#         connection.close()
+#         return result
+#     except psycopg2.Error as e:
+#         return str(e)
+
+# # Endpoint to handle SQL queries
+# @app.route('/query', methods=['POST'])
+# def handle_query():
+#     query = request.get_json().get('query')
+#     if query:
+#         result = execute_query(query)
+#         return jsonify(result)
+#     else:
+#         return 'Invalid query', 400
     
 
-@app.route('/chatbot', methods=['POST'])
-def chatbot():
-    from chatbot import db_chain
-    query = request.get_json().get('query')
-    if query:
-        result = db_chain(query)
-        print(result)
-        print(result['result'])
-        return jsonify(result['result'])
-    else:
-        return 'Invalid query', 400
-   
-try:
-    # Load .env file
-    load_dotenv()
-    # Retrieve database url
-    url = os.getenv("DATABASE_URL")
-    # Connect to database
-    connection = psycopg2.connect(url)
-except psycopg2.Error as e:
-    print('ERROR! Cannot connect to database. Check database url.', str(e))
+# @app.route('/chatbot', methods=['POST'])
+# def chatbot():
+#     from chatbot import db_chain
+#     query = request.get_json().get('query')
+#     if query:
+#         result = db_chain(query)
+#         print(result)
+#         print(result['result'])
+#         return jsonify(result['result'])
+#     else:
+#         return 'Invalid query', 400
+
+### OLD CODE FOR DB CONNECTION
+# try:
+#     # Load .env file
+#     load_dotenv()
+#     # Retrieve database url
+#     url = os.getenv("DATABASE_URL")
+#     # Connect to database
+#     connection = psycopg2.connect(url)
+# except psycopg2.Error as e:
+#     print('ERROR! Cannot connect to database. Check database url.', str(e))
 
 @app.get("/")
 def home():

@@ -9,6 +9,8 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
 import { padding } from "@mui/system";
 
+import DBCard from "../sections/DBCard";
+
 const Page = () => {
   const [messages, setMessages] = useState([
     {
@@ -67,6 +69,7 @@ const Page = () => {
 
   return (
     <>
+      <DBCard />
       <Head>
         <title>Chatbot</title>
       </Head>
