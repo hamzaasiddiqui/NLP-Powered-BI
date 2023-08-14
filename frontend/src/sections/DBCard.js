@@ -11,7 +11,7 @@ import { CircularProgress, Alert } from "@mui/material";
 
 axios.defaults.baseURL = "http://localhost:5000";
 
-export default function BasicCard() {
+export default function BasicCard({setIsConnected}) {
   const [loading, setLoading] = useState(false);
   const [buttonText, setButtonText] = useState("Connect");
   const [error, setError] = useState(null);
@@ -47,10 +47,12 @@ export default function BasicCard() {
     try {
       const response = await axios.post("/api/connectDB", formData);
       console.log("DB connection form submitted", response.data);
+      setIsConnected(true);
     } catch (error) {
       console.error("Error sending database credentials", error);
       setError("Could not establish connection! Check database credentials and try again.");
       setFormData((prevData) => ({ ...prevData, password: "" }));
+      setIsConnected(false);
     } finally {
       setLoading(false);
       setButtonText("Connect");

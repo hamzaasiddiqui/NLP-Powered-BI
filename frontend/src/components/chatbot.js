@@ -4,9 +4,15 @@ import Face2Icon from "@mui/icons-material/Face2";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
 import { Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
 
-const Chatbot = () => {
+axios.defaults.baseURL = "http://localhost:5000";
+
+const Chatbot = ({ setIsConnected }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -16,8 +22,7 @@ const Chatbot = () => {
     },
     {
       id: 2,
-      text:
-        "Hi there! I am your Database Assistant. You can ask me anything about your database",
+      text: "Hi there! I am your Database Assistant. You can ask me anything about your database",
       timestamp: subHours(new Date(), 1),
       sender: "bot",
     },
@@ -46,7 +51,7 @@ const Chatbot = () => {
       const response = await axios.post("http://localhost:5000/chatbot", {
         query: newMessage,
       });
-      
+
       const botReply = response.data;
       const botMessage = {
         id: messages.length + 2,
@@ -63,11 +68,22 @@ const Chatbot = () => {
     setIsSending(false);
   };
 
+  const handleDisconnection = async () => {
+    console.log("Before disconnection call");
+    try {
+      const response = await axios.post("/api/disconnectDB");
+      console.log("DB disconnected!");
+      setIsConnected(false);
+    } catch (error) {
+      console.error("Error disconnecting from database", error);
+    }
+    console.log("After disconnection call");
+  };
+
   return (
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
         <Stack spacing={5}>
-          
           <Box
             sx={{
               borderRadius: 4,
@@ -82,8 +98,7 @@ const Chatbot = () => {
                 key={message.id}
                 sx={{
                   display: "flex",
-                  flexDirection:
-                    message.sender === "user" ? "row-reverse" : "row",
+                  flexDirection: message.sender === "user" ? "row-reverse" : "row",
                   alignItems: "center",
                   mb: 4,
                 }}
@@ -121,6 +136,23 @@ const Chatbot = () => {
               Send
             </Button>
           </Stack>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              id="panel1a-header"
+            >
+              <Typography>Connection Details</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography style={{ marginBottom: "10px" }}>
+                <b>Important: disconnecting from the database will prompt you to connect again!</b>
+              </Typography>
+              <Button variant="outlined" color="error" onClick={handleDisconnection}>
+                Disconnect Database
+              </Button>
+            </AccordionDetails>
+          </Accordion>
         </Stack>
       </Container>
     </Box>

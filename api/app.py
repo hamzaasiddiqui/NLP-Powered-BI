@@ -112,6 +112,9 @@ REVENUE_PER_MONTH = (
 app = Flask(__name__)
 
 CORS(app)
+
+CORS(app, origins="http://localhost:3000/")
+
 app.config['CORS_HEADER'] = 'Content-Type'
 load_dotenv()
 connection = None
@@ -127,21 +130,8 @@ def connect_to_db():
     database = data.get('database')
     user = data.get('user')
     password = data.get('password')
-open_ai = os.getenv('OPENAI_API_KEY')
-try:
-    # Connect to database
-    connection = psycopg2.connect(db_url)
-except psycopg2.Error as e:
-    print('ERROR! Cannot connect to database. Check database url.', str(e))
-
 
     try:
-        cursor = connection.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
-        cursor.close()
-        connection.close()
-        return result
         if connection is None or connection.closed != 0:
             connection = psycopg2.connect(
                 host=host,
@@ -168,10 +158,17 @@ def close_db_connection():
     if connection:
         connection.close()
         connection = None
-        
-        return jsonify({'Database connection successfully closed!'}), 200
+
+        print('DISCONNECTED')
+        print(connection)
+
+        response_data = {'message': 'Data received successfully'}  # Create a response dictionary
+
+        return jsonify(response_data)
     else:
-        return jsonify({'No active database connection to close!'})
+        response_data = {'message': 'No databse to disconnect'}  # Create a response dictionary
+
+        return jsonify(response_data)
 
 # # Retrieve database URL from environment variable
 # db_url = os.getenv('DATABASE_URL')
