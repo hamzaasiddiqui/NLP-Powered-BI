@@ -124,31 +124,36 @@ def connect_to_db():
     global connection
 
     data = request.json
-
-    host = data.get('host')
-    port = data.get('port')
-    database = data.get('database')
-    user = data.get('user')
-    password = data.get('password')
+    connection_type = data.get('connectionType')
 
     try:
         if connection is None or connection.closed != 0:
-            connection = psycopg2.connect(
-                host=host,
-                port=port,
-                database=database,
-                user=user,
-                password=password
-            )
+            if connection_type == 'url':  
+                
+                database_url = data.get('databaseUrl')
+                connection = psycopg2.connect(database_url)
+            else:  # Connect using individual details
+                
+                host = data.get('host')
+                port = data.get('port')
+                database = data.get('database')
+                user = data.get('user')
+                password = data.get('password')
+                connection = psycopg2.connect(
+                    host=host,
+                    port=port,
+                    database=database,
+                    user=user,
+                    password=password
+                )
 
-        response_data = {'message': 'Data received successfully'}  # Create a response dictionary
-
-        return jsonify(response_data)
+            response_data = {'message': 'Connected to the database successfully'}
+            return jsonify(response_data)
     except psycopg2.Error as e:
-        # return str(e)
         error_message = str(e)
         return jsonify({'error': error_message}), 500
     
+
 # Route to close DB connection
 # FOR FUTURE DEVELOPMENT
 @app.route('/api/disconnectDB', methods=['POST'])
@@ -202,7 +207,9 @@ def chatbot():
     from chatbot import chatbot
     query = request.get_json().get('query')
     if query:
-        result = chatbot(query)
+       
+        result = chatbot(query, conn=connection)
+        
         print(result)
         return jsonify(result)
     else:
@@ -316,11 +323,8 @@ def get_revenue_per_month():
 
 
 if __name__ == '__main__':
-    # Load .env file
+
     load_dotenv()
-    # Retrieve database url
-    url = os.getenv("DATABASE_URL")
-    # Connect to database
-    connection = psycopg2.connect(url)
+
 
     app.run(debug=True)

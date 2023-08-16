@@ -9,7 +9,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
-
+import ChartComponent from './chart2'
 axios.defaults.baseURL = "http://localhost:5000";
 
 const Chatbot = ({ setIsConnected }) => {
@@ -20,12 +20,7 @@ const Chatbot = ({ setIsConnected }) => {
       timestamp: subHours(new Date(), 1),
       sender: "user",
     },
-    {
-      id: 2,
-      text: "Hi there! I am your Database Assistant. You can ask me anything about your database",
-      timestamp: subHours(new Date(), 1),
-      sender: "bot",
-    },
+    
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -52,12 +47,26 @@ const Chatbot = ({ setIsConnected }) => {
         query: newMessage,
       });
 
-      const botReply = response.data;
+      const res = response.data['DATA'];
+      const chartConfigString = response.data['CHART'];
+      const SQL_QUERY = response.data['SQL_QUERY'];
+      const TYPE = response.data['TYPE'];
+      
+      const expandedChartConfigString = chartConfigString.replace(/res\.map\(\(\[labels, _\]\) => labels\)/g, JSON.stringify(res.map(([labels, _]) => labels)))
+                                                         .replace(/res\.map\(\(\[_, data\]\) => data\)/g, JSON.stringify(res.map(([_, data]) => data)));
+    
+      
+      
+    
+      console.log(expandedChartConfigString)
+      
       const botMessage = {
-        id: messages.length + 2,
-        text: botReply,
+        id: messages.length + 1,
+        text: expandedChartConfigString,
         timestamp: new Date(),
         sender: "bot",
+        type: TYPE,
+        SQL_QUERY: SQL_QUERY,
       };
 
       setMessages([...messages, botMessage]);
@@ -109,7 +118,14 @@ const Chatbot = ({ setIsConnected }) => {
                   <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
                 )}
                 <Box>
-                  <Typography>{message.text}</Typography>
+                  {message.sender === "bot" ? (
+                    <div>
+                      <ChartComponent chartData={message.text}/>
+                    </div>
+                  ) : (
+                    <Typography>{message.text}</Typography>
+                  )}
+                  
                   <Typography variant="caption" color="textSecondary">
                     {message.timestamp.toLocaleString()}
                   </Typography>

@@ -5,10 +5,10 @@ import sqlalchemy
 from langchain.chains import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from schema import execute_query, get_schema_info
-from SQL_CHAIN import SQL_QUERY_PROMPT
+import SQL_QUERY
 import numpy as np
 llm = ChatOpenAI(temperature=0.5, openai_api_key="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", model='gpt-3.5-turbo')
-SQL_CHAIN = LLMChain(llm=llm, prompt=SQL_QUERY_PROMPT)
+
 
 def make_table(res, size=1):
     max_name_length = max(len(name) for name, _ in res)
@@ -24,7 +24,11 @@ def make_table(res, size=1):
 
     return table_str
 
-def chatbot(question):
+def chatbot(question, conn):
+    
+    SQL_QUERY_PROMPT = SQL_QUERY.SQL_QUERY(conn)
+   
+    SQL_CHAIN = LLMChain(llm=llm, prompt=SQL_QUERY_PROMPT)
     sql_query = SQL_CHAIN.run(question)
     result = execute_query(sql_query)
     total = len(result)
@@ -74,18 +78,21 @@ def chatbot(question):
             {{
                 type: string,
                 data: {{
-                    labels: list, // generate list dynamically from res.map(([labels, _]) => labels)
+                    labels: res.map(([labels, _]) => labels, // generate list dynamically from res.map(([labels, _]) => labels)
                     datasets: [{{
-                        data: list, // generate list dynamically from res.map(([_, data]) => data)
+                        data: res.map(([_, data]) => data, // generate list dynamically from res.map(([_, data]) => data)
                     }}]
                 }},
                 options: object, -- asign options.title.text and others dynamically
             }}
 
+            - You must use res.map(([labels, _]) => labels for lables and res.map(([_, data]) => data for data.
             - This js object should be the sole content of the message, there should be no intermediate variables
             - The JS object should make use of data from the 'res.rows' object to handle labels, datasets, axes title and others
             - The JS object should start with '{{' and end with '}}'
             - The JS object should be syntaxically correct
+            - All keys in the js object must be enclosed in double quotes
+            - Don't use any function to generate random colors. You can use any color code.
 
             JS Object:
 

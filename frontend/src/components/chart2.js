@@ -1,19 +1,38 @@
 import React from 'react';
+import { Bar, Line, Pie, Doughnut } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-export default function Chart(props) {
-  const handleBack = () => {
-    // Implement your logic here for going back
-    console.log('Going back...');
-  };
+const ChartComponent = ({ chartData }) => {
 
-  const markdown = props.data.markdown;
+  console.log(chartData)
+  
+  var chartDataParsed = JSON.parse(chartData);
+  const { type, data, options } = chartDataParsed;
+
+  let ChartElement;
+  switch (type) {
+    case 'bar':
+      ChartElement = Bar;
+      break;
+    case 'line':
+      ChartElement = Line;
+      break;
+    case 'pie':
+      ChartElement = Pie;
+      break;
+    case 'doughnut':
+      ChartElement = Doughnut;
+      break;
+    default:
+      ChartElement = Bar; // Default to bar chart
+      break;
+  }
 
   return (
     <div>
-      <div dangerouslySetInnerHTML={{ __html: markdown }} />
-      <div>
-        <button onClick={handleBack}>Back</button>
-      </div>
+      <ChartElement data={data || {}} options={options || {}} />
     </div>
   );
-}
+};
+
+export default ChartComponent;
