@@ -3,13 +3,13 @@ import { subHours } from "date-fns";
 import Face2Icon from "@mui/icons-material/Face2";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
-import { Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
-import ChartComponent from './chart2'
+import ChartComponent from "./chart2";
 axios.defaults.baseURL = "http://localhost:5000";
 
 const Chatbot = ({ setIsConnected }) => {
@@ -20,7 +20,6 @@ const Chatbot = ({ setIsConnected }) => {
       timestamp: subHours(new Date(), 1),
       sender: "user",
     },
-    
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -47,19 +46,23 @@ const Chatbot = ({ setIsConnected }) => {
         query: newMessage,
       });
 
-      const res = response.data['DATA'];
-      const chartConfigString = response.data['CHART'];
-      const SQL_QUERY = response.data['SQL_QUERY'];
-      const TYPE = response.data['TYPE'];
-      
-      const expandedChartConfigString = chartConfigString.replace(/res\.map\(\(\[labels, _\]\) => labels\)/g, JSON.stringify(res.map(([labels, _]) => labels)))
-                                                         .replace(/res\.map\(\(\[_, data\]\) => data\)/g, JSON.stringify(res.map(([_, data]) => data)));
-    
-      
-      
-    
-      console.log(expandedChartConfigString)
-      
+      const res = response.data["DATA"];
+      const chartConfigString = response.data["CHART"];
+      const SQL_QUERY = response.data["SQL_QUERY"];
+      const TYPE = response.data["TYPE"];
+
+      const expandedChartConfigString = chartConfigString
+        .replace(
+          /res\.map\(\(\[labels, _\]\) => labels\)/g,
+          JSON.stringify(res.map(([labels, _]) => labels))
+        )
+        .replace(
+          /res\.map\(\(\[_, data\]\) => data\)/g,
+          JSON.stringify(res.map(([_, data]) => data))
+        );
+
+      console.log(expandedChartConfigString);
+
       const botMessage = {
         id: messages.length + 1,
         text: expandedChartConfigString,
@@ -120,12 +123,12 @@ const Chatbot = ({ setIsConnected }) => {
                 <Box>
                   {message.sender === "bot" ? (
                     <div>
-                      <ChartComponent chartData={message.text}/>
+                      <ChartComponent chartData={message.text} />
                     </div>
                   ) : (
                     <Typography>{message.text}</Typography>
                   )}
-                  
+
                   <Typography variant="caption" color="textSecondary">
                     {message.timestamp.toLocaleString()}
                   </Typography>
@@ -133,6 +136,51 @@ const Chatbot = ({ setIsConnected }) => {
               </Box>
             ))}
           </Box>
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            {/* Select Database */}
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Select Database</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                // value={}
+                label="Age"
+                // onChange={}
+              >
+                <MenuItem value={10}>Northwind</MenuItem>
+              </Select>
+            </FormControl>
+            {/* Select Model */}
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Select Model</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                // value={}
+                label="Age"
+                // onChange={}
+              >
+                <MenuItem value={10}>GPT 3.5</MenuItem>
+                <MenuItem value={20}>Lamma 2</MenuItem>
+              </Select>
+            </FormControl>
+            {/* Select Visualization */}
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Select Visualization</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                // value={}
+                label="Age"
+                // onChange={}
+              >
+                <MenuItem value={10}>Chart.js</MenuItem>
+                <MenuItem value={20}>D3</MenuItem>
+              </Select>
+            </FormControl>  
+          </Stack>
+
           <Stack direction="row" spacing={2} alignItems="center">
             <TextField
               fullWidth
