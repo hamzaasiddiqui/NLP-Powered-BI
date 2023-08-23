@@ -21,8 +21,20 @@ const Chatbot = ({ setIsConnected }) => {
       sender: "user",
     },
   ]);
+
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+
+  const [model, setModel] = useState("GPT 3.5");
+  const [visualization, setVisualization] = useState("Chart.js");
+
+  const handleModelChange = (event) => {
+    setModel(event.target.value);
+  };
+
+  const handleVisualizationChange = (event) => {
+    setVisualization(event.target.value);
+  };
 
   const handleSendMessage = async () => {
     if (isSending || newMessage.trim() === "") {
@@ -139,7 +151,7 @@ const Chatbot = ({ setIsConnected }) => {
 
           <Stack direction="row" spacing={2} alignItems="center">
             {/* Select Database */}
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small" disabled>
               <InputLabel id="demo-simple-select-label">Select Database</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
@@ -151,32 +163,36 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value={10}>Northwind</MenuItem>
               </Select>
             </FormControl>
+
             {/* Select Model */}
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small" >
               <InputLabel id="demo-simple-select-label">Select Model</InputLabel>
               <Select
+                defaultValue="GPT 3.5"
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                // value={}
+                value={model}
                 label="Age"
-                // onChange={}
+                onChange={handleModelChange}
               >
-                <MenuItem value={10}>GPT 3.5</MenuItem>
-                <MenuItem value={20}>Lamma 2</MenuItem>
+                <MenuItem value="GPT 3.5">GPT 3.5</MenuItem>
+                <MenuItem value="Lamma 2">Lamma 2</MenuItem>
               </Select>
             </FormControl>
+
             {/* Select Visualization */}
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small" >
               <InputLabel id="demo-simple-select-label">Select Visualization</InputLabel>
               <Select
+                defaultValue="Chart.js"
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                // value={}
+                value={visualization}
                 label="Age"
-                // onChange={}
+                onChange={handleVisualizationChange}
               >
-                <MenuItem value={10}>Chart.js</MenuItem>
-                <MenuItem value={20}>D3</MenuItem>
+                <MenuItem value="Chart.js">Chart.js</MenuItem>
+                <MenuItem value="D3">D3</MenuItem>
               </Select>
             </FormControl>  
           </Stack>
