@@ -191,7 +191,7 @@ const Chatbot = ({ setIsConnected }) => {
                 onChange={handleModelChange}
               >
                 <MenuItem value="GPT 3.5">GPT 3.5</MenuItem>
-                <MenuItem value="Lamma 2">Lamma 2</MenuItem>
+                <MenuItem value="Lamma 2" disabled>Lamma 2</MenuItem>
               </Select>
             </FormControl>
             {/* Select Visualization */}
@@ -205,7 +205,7 @@ const Chatbot = ({ setIsConnected }) => {
                 onChange={handleVisualizationChange}
               >
                 <MenuItem value="Chart.js">Chart.js</MenuItem>
-                <MenuItem value="D3">D3</MenuItem>
+                <MenuItem value="D3" disabled>D3</MenuItem>
               </Select>
             </FormControl>
           </Stack>
