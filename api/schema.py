@@ -2,26 +2,23 @@ import os
 import psycopg2
 import io
 
-db_url = 'postgres://puttplgt:BliGMxjlgIxuqLudrJb56yVWm8p1Uq5U@lucky.db.elephantsql.com/puttplgt'
-
-
-def execute_query(query):
+def execute_query(query, connection):
     try:
-        connection = psycopg2.connect(db_url)
+        
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
-        connection.close()
+        
         return result
     except psycopg2.Error as e:
         return str(e)
     
 
 
-def get_schema_info():
+def get_schema_info(connection):
     try:
-        connection = psycopg2.connect(db_url)
+        
         cursor = connection.cursor()
 
         # Get table names
@@ -72,7 +69,7 @@ def get_schema_info():
             }
 
         cursor.close()
-        connection.close()
+        
 
         output_stream = io.StringIO()
         first_iteration = True

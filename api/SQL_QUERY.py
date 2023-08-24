@@ -22,10 +22,14 @@ def SQL_QUERY(conn):
 
     prompt = formatter.format_prompt()
 
-    question = "QUESTION: {instruction}\nSQL QUERY: "
+    question = """Chat history: {chat_history}
+                
+                
+                HUMAN: {instruction}
+                Chatbot: """
 
     SQL_QUERY_PROMPT = PromptTemplate(
-                input_variables=["instruction"],
+                input_variables=["chat_history", "instruction"],
                 template= prompt + question,
             )
     return SQL_QUERY_PROMPT

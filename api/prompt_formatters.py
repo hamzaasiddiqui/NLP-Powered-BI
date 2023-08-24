@@ -71,6 +71,8 @@ class Formatter:
         sql_prefix = "SQL QUERY:  "
         return f"""{self.table_str}\n\n\nUsing valid SQL, answer the following questions for the tables provided above. Only focus on SQL related part. Ignore anything else.
         With the following rules:
+        - Make the Query such that the result would be suitable to make a chart.
+        - Must conatin a column that contains numbers or add a relevant column by yourself that contains numbers.
         - The SQL Query should respect the case and consider columns and tables as case-sensitive
         - The SQL Query should use quotes around table and column names containing uppercase characters
         - The SQL Query should be syntaxically correct

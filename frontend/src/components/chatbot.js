@@ -1,30 +1,33 @@
-import React, { useState } from "react";
-import { subHours } from "date-fns";
+import React, { useState, useEffect } from "react";
 import Face2Icon from "@mui/icons-material/Face2";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
-import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  TextField,
+  Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
-import ChartComponent from "./chart2";
+import ResizableChart from "./chart2";
+import { margin } from "@mui/system";
+import DynamicTable from "./table";
 axios.defaults.baseURL = "http://localhost:5000";
-
+var res = null;
 const Chatbot = ({ setIsConnected }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hello!",
-      timestamp: subHours(new Date(), 1),
-      sender: "user",
-    },
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-
   const [model, setModel] = useState("GPT 3.5");
   const [visualization, setVisualization] = useState("Chart.js");
 
@@ -36,6 +39,10 @@ const Chatbot = ({ setIsConnected }) => {
     setVisualization(event.target.value);
   };
 
+  useEffect(() => {
+    console.log(messages); // Log the updated messages state
+  }, [messages]);
+
   const handleSendMessage = async () => {
     if (isSending || newMessage.trim() === "") {
       return;
@@ -43,14 +50,14 @@ const Chatbot = ({ setIsConnected }) => {
 
     setIsSending(true);
 
-    const message = {
-      id: messages.length + 1,
+    const newUserMessage = {
+      id: messages.length,
       text: newMessage,
       timestamp: new Date(),
       sender: "user",
     };
 
-    setMessages([...messages, message]);
+    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setNewMessage("");
 
     try {
@@ -58,7 +65,7 @@ const Chatbot = ({ setIsConnected }) => {
         query: newMessage,
       });
 
-      const res = response.data["DATA"];
+      res = response.data["DATA"];
       const chartConfigString = response.data["CHART"];
       const SQL_QUERY = response.data["SQL_QUERY"];
       const TYPE = response.data["TYPE"];
@@ -73,9 +80,7 @@ const Chatbot = ({ setIsConnected }) => {
           JSON.stringify(res.map(([_, data]) => data))
         );
 
-      console.log(expandedChartConfigString);
-
-      const botMessage = {
+      const newBotMessage = {
         id: messages.length + 1,
         text: expandedChartConfigString,
         timestamp: new Date(),
@@ -84,7 +89,7 @@ const Chatbot = ({ setIsConnected }) => {
         SQL_QUERY: SQL_QUERY,
       };
 
-      setMessages([...messages, botMessage]);
+      setMessages((prevMessages) => [...prevMessages, newBotMessage]);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -117,38 +122,48 @@ const Chatbot = ({ setIsConnected }) => {
               boxShadow: 10,
             }}
           >
-            {messages.map((message) => (
-              <Box
-                key={message.id}
-                sx={{
-                  display: "flex",
-                  flexDirection: message.sender === "user" ? "row-reverse" : "row",
-                  alignItems: "center",
-                  mb: 4,
-                }}
-              >
-                {message.sender === "bot" ? (
-                  <SmartToyIcon sx={{ mr: 3 }} />
-                ) : (
-                  <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
-                )}
-                <Box>
+            {messages.length > 0 &&
+              messages.map((message) => (
+                <Box
+                  key={message.id}
+                  sx={{
+                    display: "flex",
+                    flexDirection: message.sender === "user" ? "row-reverse" : "row",
+                    alignItems: "center",
+                    mb: 4,
+                  }}
+                >
                   {message.sender === "bot" ? (
-                    <div>
-                      <ChartComponent chartData={message.text} />
-                    </div>
+                    <SmartToyIcon sx={{ mr: 3 }} />
                   ) : (
-                    <Typography>{message.text}</Typography>
+                    <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
                   )}
+                  <Box>
+                    {message.sender === "bot" && message.type === "chart" ? (
+                      <ResizableChart chartData={message.text} />
+                    ) : (
+                      <Typography>{message.text}</Typography>
+                    )}
+                    {message.sender === "bot" ? (
+                      <Typography variant="h6" fontWeight="bold">
+                        SQL QUERY GENERATED:{" "}
+                      </Typography>
+                    ) : (
+                      <></>
+                    )}
+                    {message.sender === "bot" ? (
+                      <Typography>{message.SQL_QUERY}</Typography>
+                    ) : (
+                      <></>
+                    )}
 
-                  <Typography variant="caption" color="textSecondary">
-                    {message.timestamp.toLocaleString()}
-                  </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {message.timestamp.toLocaleString()}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              ))}
           </Box>
-
           <Stack direction="row" spacing={2} alignItems="center">
             {/* Select Database */}
             <FormControl fullWidth size="small" disabled>
@@ -163,12 +178,12 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value={10}>Northwind</MenuItem>
               </Select>
             </FormControl>
-
             {/* Select Model */}
-            <FormControl fullWidth size="small" >
-              <InputLabel id="demo-simple-select-label">Select Model</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label" size="small">
+                Select Model
+              </InputLabel>
               <Select
-                defaultValue="GPT 3.5"
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={model}
@@ -179,12 +194,10 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value="Lamma 2">Lamma 2</MenuItem>
               </Select>
             </FormControl>
-
             {/* Select Visualization */}
-            <FormControl fullWidth size="small" >
+            <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Select Visualization</InputLabel>
               <Select
-                defaultValue="Chart.js"
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={visualization}
@@ -194,9 +207,8 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value="Chart.js">Chart.js</MenuItem>
                 <MenuItem value="D3">D3</MenuItem>
               </Select>
-            </FormControl>  
+            </FormControl>
           </Stack>
-
           <Stack direction="row" spacing={2} alignItems="center">
             <TextField
               fullWidth
@@ -216,6 +228,10 @@ const Chatbot = ({ setIsConnected }) => {
               Send
             </Button>
           </Stack>
+          <div>
+            <h4>SQL Query Results</h4>
+            {res && <DynamicTable data={res} maxHeight={300} />}
+          </div>
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}

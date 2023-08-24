@@ -12,7 +12,7 @@ import { OverviewTotalProfit } from "src/sections/overview/overview-total-profit
 import { OverviewTraffic } from "src/sections/overview/overview-traffic";
 import { useEffect, useState } from "react";
 import { OverviewCard } from "src/sections/overview/overview-card";
-import Chatbot from "src/components/chatbot2";
+
 const apiUrl = "http://localhost:5000";
 
 const now = new Date();

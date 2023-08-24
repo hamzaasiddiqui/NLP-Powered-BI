@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jsonminify": "^0.4.2"
+  }
+}
