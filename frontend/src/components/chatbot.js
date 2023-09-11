@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Face2Icon from "@mui/icons-material/Face2";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
+import DBbutton from "../sections/DBbutton";
 import {
   Box,
   Button,
@@ -11,6 +12,7 @@ import {
   Typography,
   FormControl,
   InputLabel,
+  CssBaseline,
   MenuItem,
   Select,
 } from "@mui/material";
@@ -21,16 +23,51 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
 import ResizableChart from "./chart2";
 import { margin } from "@mui/system";
+import CustomizableChart from "./CustomizableChart";
 import DynamicTable from "./table";
 axios.defaults.baseURL = "http://localhost:5000";
-var res = null;
+var columns = null;
+var SQL_QUERY = null;
+var DATA = null;
+function selectColumns(inputArray, columnIndex1, columnIndex2) {
+  if (!Array.isArray(inputArray) || inputArray.length === 0) {
+    throw new Error("Invalid input array");
+  }
+
+  if (
+    !Number.isInteger(columnIndex1) ||
+    !Number.isInteger(columnIndex2) ||
+    columnIndex1 < 0 ||
+    columnIndex2 < 0 ||
+    columnIndex1 >= inputArray[0].length ||
+    columnIndex2 >= inputArray[0].length
+  ) {
+    throw new Error("Invalid column indexes");
+  }
+
+  const resultArray = inputArray.map((row) => [row[columnIndex1], row[columnIndex2]]);
+  return resultArray;
+}
+
 const Chatbot = ({ setIsConnected }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [model, setModel] = useState("GPT 3.5");
   const [visualization, setVisualization] = useState("Chart.js");
+  const [chart, setChart] = useState("Bar");
+  const [XAxis, setXAxis] = useState(0);
+  const [YAxis, setYAxis] = useState(1);
 
+  const handleXAxisChange = (event) => {
+    setXAxis(event.target.value);
+  };
+  const handleYAxisChange = (event) => {
+    setYAxis(event.target.value);
+  };
+  const handleChartChange = (event) => {
+    setChart(event.target.value);
+  };
   const handleModelChange = (event) => {
     setModel(event.target.value);
   };
@@ -39,9 +76,7 @@ const Chatbot = ({ setIsConnected }) => {
     setVisualization(event.target.value);
   };
 
-  useEffect(() => {
-    console.log(messages); // Log the updated messages state
-  }, [messages]);
+  useEffect(() => {}, [messages]);
 
   const handleSendMessage = async () => {
     if (isSending || newMessage.trim() === "") {
@@ -65,28 +100,18 @@ const Chatbot = ({ setIsConnected }) => {
         query: newMessage,
       });
 
-      res = response.data["DATA"];
-      const chartConfigString = response.data["CHART"];
-      const SQL_QUERY = response.data["SQL_QUERY"];
-      const TYPE = response.data["TYPE"];
-
-      const expandedChartConfigString = chartConfigString
-        .replace(
-          /res\.map\(\(\[labels, _\]\) => labels\)/g,
-          JSON.stringify(res.map(([labels, _]) => labels))
-        )
-        .replace(
-          /res\.map\(\(\[_, data\]\) => data\)/g,
-          JSON.stringify(res.map(([_, data]) => data))
-        );
+      DATA = response.data["DATA"];
+      SQL_QUERY = response.data["SQL_QUERY"];
+      columns = response.data["columns"];
 
       const newBotMessage = {
         id: messages.length + 1,
-        text: expandedChartConfigString,
         timestamp: new Date(),
         sender: "bot",
-        type: TYPE,
+        chart: null,
+        data: DATA,
         SQL_QUERY: SQL_QUERY,
+        columns: columns,
       };
 
       setMessages((prevMessages) => [...prevMessages, newBotMessage]);
@@ -107,6 +132,25 @@ const Chatbot = ({ setIsConnected }) => {
       console.error("Error disconnecting from database", error);
     }
     console.log("After disconnection call");
+  };
+
+  const handleGenerateGraph = (event) => {
+    console.log(XAxis);
+    console.log(YAxis);
+    const data = selectColumns(DATA, XAxis, YAxis);
+    const newBotMessage = {
+      id: messages.length + 1,
+      timestamp: new Date(),
+      sender: "bot",
+      chart: chart,
+      data: data,
+      Xlabel: columns[XAxis],
+      Ylabel: columns[YAxis],
+      ChartTitle: "Chart", 
+    };
+
+    setMessages((prevMessages) => [...prevMessages, newBotMessage]);
+    
   };
 
   return (
@@ -139,20 +183,20 @@ const Chatbot = ({ setIsConnected }) => {
                     <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
                   )}
                   <Box>
-                    {message.sender === "bot" && message.type === "chart" ? (
-                      <ResizableChart chartData={message.text} />
-                    ) : (
-                      <Typography>{message.text}</Typography>
-                    )}
-                    {message.sender === "bot" ? (
+                    {message.sender === "bot" && message.chart == null ? (
                       <Typography variant="h6" fontWeight="bold">
                         SQL QUERY GENERATED:{" "}
                       </Typography>
                     ) : (
+                      <Typography>{message.text}</Typography>
+                    )}
+                    {message.sender === "bot" && message.chart == null ? (
+                      <Typography>{message.SQL_QUERY}</Typography>
+                    ) : (
                       <></>
                     )}
-                    {message.sender === "bot" ? (
-                      <Typography>{message.SQL_QUERY}</Typography>
+                    {message.sender === "bot" && message.chart != null ? (
+                      <CustomizableChart chartType={message.chart} data={message.data} Xlabel={message.Xlabel} Ylabel={message.Ylabel} ChartTitle={message.ChartTitle}/>
                     ) : (
                       <></>
                     )}
@@ -164,6 +208,7 @@ const Chatbot = ({ setIsConnected }) => {
                 </Box>
               ))}
           </Box>
+
           <Stack direction="row" spacing={2} alignItems="center">
             {/* Select Database */}
             <FormControl fullWidth size="small" disabled>
@@ -178,6 +223,28 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value={10}>Northwind</MenuItem>
               </Select>
             </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label" size="small">
+                Select Chart
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={chart}
+                label="Age"
+                onChange={handleChartChange}
+              >
+                <MenuItem value="Bar">Bar Chart</MenuItem>
+                <MenuItem value="Pie">Pie Chart</MenuItem>
+                <MenuItem value="Line">Line Chart</MenuItem>
+                <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
+                <MenuItem value="Scatter">Scatter Plot</MenuItem>
+                {/* <MenuItem value="Bubble">Bubble Chart</MenuItem> */}
+                <MenuItem value="Radar">Radar Chart</MenuItem>
+              </Select>
+            </FormControl>
+
             {/* Select Model */}
             <FormControl fullWidth>
               <InputLabel id="demo-simple-select-label" size="small">
@@ -191,7 +258,9 @@ const Chatbot = ({ setIsConnected }) => {
                 onChange={handleModelChange}
               >
                 <MenuItem value="GPT 3.5">GPT 3.5</MenuItem>
-                <MenuItem value="Lamma 2" disabled>Lamma 2</MenuItem>
+                <MenuItem value="Lamma 2" disabled>
+                  Lamma 2
+                </MenuItem>
               </Select>
             </FormControl>
             {/* Select Visualization */}
@@ -205,7 +274,9 @@ const Chatbot = ({ setIsConnected }) => {
                 onChange={handleVisualizationChange}
               >
                 <MenuItem value="Chart.js">Chart.js</MenuItem>
-                <MenuItem value="D3" disabled>D3</MenuItem>
+                <MenuItem value="D3" disabled>
+                  D3
+                </MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -228,9 +299,48 @@ const Chatbot = ({ setIsConnected }) => {
               Send
             </Button>
           </Stack>
+
+          {columns && columns.length > 0 && (
+            <Stack direction="row" spacing={4} alignItems="center">
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">{chart === "Pie" || chart === "Radar" || chart === "Doughnut" ? "Select Label" : "Select X-Axis"}</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={XAxis}
+                  label="Age"
+                  onChange={handleXAxisChange}
+                >
+                  {columns.map((column, index) => (
+                    <MenuItem key={index} value={index}>
+                      {column}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">{chart === "Pie" || chart === "Radar" || chart === "Doughnut" ? "Select Dataset" : "Select Y-Axis"}</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={YAxis}
+                  label="Age"
+                  onChange={handleYAxisChange}
+                >
+                  {columns.map((column, index) => (
+                    <MenuItem key={index} value={index}>
+                      {column}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button onClick={handleGenerateGraph}>Generate Graph</Button>
+            </Stack>
+          )}
           <div>
             <h4>SQL Query Results</h4>
-            {res && <DynamicTable data={res} maxHeight={300} />}
+
+            {DATA && (<DynamicTable data={DATA} tableHead={columns} maxHeight={300} />)}
           </div>
           <Accordion>
             <AccordionSummary
@@ -247,6 +357,9 @@ const Chatbot = ({ setIsConnected }) => {
               <Button variant="outlined" color="error" onClick={handleDisconnection}>
                 Disconnect Database
               </Button>
+              <Box display="flex" justifyContent="center">
+                <DBbutton />
+              </Box>
             </AccordionDetails>
           </Accordion>
         </Stack>

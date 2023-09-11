@@ -18,20 +18,23 @@ app.config['CORS_HEADER'] = 'Content-Type'
 load_dotenv()
 connection = None
 chatbot_ = None
-openai_api_key = os.getenv('OPENAI_API_KEY')
+openai_api_key = None
+# openai_api_key = os.getenv('OPENAI_API_KEY')
 
 @app.route('/api/connectDB', methods=['POST'])
 def connect_to_db():
     global connection
     global chatbot_
+    global openai_api_key
     data = request.json
     connection_type = data.get('connectionType')
 
     try:
         if connection is None or connection.closed != 0:
             if connection_type == 'url':  
-                
+                openai_api_key = data.get('openai_api_key')
                 database_url = data.get('databaseUrl')
+
                 connection = psycopg2.connect(database_url)
             else:  # Connect using individual details
                 
@@ -54,7 +57,8 @@ def connect_to_db():
     except psycopg2.Error as e:
         error_message = str(e)
         return jsonify({'error': error_message}), 500
-    
+
+
 
 # Route to close DB connection
 # FOR FUTURE DEVELOPMENT

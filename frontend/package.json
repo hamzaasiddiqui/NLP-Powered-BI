@@ -30,6 +30,7 @@
     "chart.js": "^4.3.3",
     "date-fns": "2.29.3",
     "formik": "2.2.9",
+    "fs": "^0.0.1-security",
     "jsonminify": "^0.4.2",
     "mui": "^0.0.1",
     "next": "13.1.6",
@@ -41,6 +42,7 @@
     "react-dom": "18.2.0",
     "react-resizable": "^3.0.5",
     "simplebar-react": "^3.2.1",
+    "sql-parser": "^0.5.0",
     "yup": "1.0.0"
   },
   "devDependencies": {

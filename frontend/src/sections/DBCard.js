@@ -27,6 +27,7 @@ export default function BasicCard({ setIsConnected }) {
     user: "",
     password: "",
     databaseUrl: "",
+    openai_api_key: "",
   });
 
   const handleSubmit = async (e) => {
@@ -92,6 +93,7 @@ export default function BasicCard({ setIsConnected }) {
           />
         </RadioGroup>
         {connectionType === "url" ? (
+          <>
           <TextField
             id="databaseUrl"
             label="Enter Database URL"
@@ -101,6 +103,16 @@ export default function BasicCard({ setIsConnected }) {
             onChange={handleInputChange}
             value={formData.databaseUrl}
           />
+          <TextField
+            id="openai_api_key"
+            label="Enter Open Api Key"
+            type="string"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            onChange={handleInputChange}
+            value={formData.openai_api_key}
+          />
+          </>
         ) : (
           <>
             <TextField
@@ -146,6 +158,15 @@ export default function BasicCard({ setIsConnected }) {
               fullWidth
               onChange={handleInputChange}
               value={formData.password}
+            />
+              <TextField
+              id="openai_api_key"
+              label="Enter Open Api Key"
+              type="string"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              onChange={handleInputChange}
+              value={formData.openai_api_key}
             />
           </>
         )}

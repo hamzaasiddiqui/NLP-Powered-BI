@@ -4,15 +4,28 @@ import os
 import sqlalchemy
 from langchain.chains import LLMChain
 from langchain.prompts.prompt import PromptTemplate
+from langchain.memory import ConversationBufferWindowMemory
 from schema import execute_query
+from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import SystemMessage
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 import SQL_QUERY
 import numpy as np
+import sqlparse
 class Chatbot:
     def __init__(self, openai_api_key, conn):
-        self.llm = ChatOpenAI(temperature=0.5, openai_api_key=openai_api_key, model='gpt-3.5-turbo')
+        self.llm = ChatOpenAI(temperature=0.4, openai_api_key=openai_api_key, model='gpt-3.5-turbo')
         self.SQL_QUERY_PROMPT = SQL_QUERY.SQL_QUERY(conn)
         self.connection = conn
+        self.prompt = ChatPromptTemplate.from_messages([
+            SystemMessage(content=self.SQL_QUERY_PROMPT), # The persistent system prompt
+            MessagesPlaceholder(variable_name="chat_history"), # Where the memory will be stored.
+            HumanMessagePromptTemplate.from_template("{instruction}"), # Where the human input will injected
+        ])
+        self.memory = ConversationBufferWindowMemory(k=10, return_messages=True, memory_key="chat_history")
+        self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
     def make_table(self, res, size=1):
         max_name_length = max(len(name) for name, _ in res)
         table_str = ""
@@ -23,122 +36,55 @@ class Chatbot:
             row = f"| {name:<{max_name_length}} | {number} |\n"
             table_str += row
         return table_str
+    
+    def extract_columns_from_query(self, query):
+        parsed = sqlparse.parse(query)
 
-    def chatbot(self, question):
-        memory = ConversationBufferMemory(memory_key="chat_history")
-        SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.SQL_QUERY_PROMPT, memory=memory)
-        sql_query = SQL_CHAIN.predict(instruction = question)
-        result = execute_query(sql_query, self.connection)
-        print(result)
-        total = len(result)
-        # table = self.make_table(result)
-        # typePrompt = """
-        #     USER QUESTION: {question}
-        #     This SQL Query: {query}
-        #     Returned {total} row(s) in total, here is table showing a sample of the first row: 
-        #     {table}
+        # Find the first valid SQL statement
+        statement = parsed[0] if parsed else None
 
-        #     What is the most appropriate representation type to best represent this data, either as a simple sentence describing the results, or as a chart? Reply with either "sentence" or "chart" and nothing more.
+        columns = []
 
-        #     Rules:
-        #     - If the user has mentioned the type of representation he wants then you must return that
-        #     - The type should either be "sentence" or "chart"
-        #     - The type should not exceed one word
-        #     - If user says he want the data in chart then you must return "chart"
-
-        #     Type:
-
-            #  """
-        # SELECTION_PROMPT = PromptTemplate(
-        #             input_variables=["question", "query", "total", "table"],
-        #             template=typePrompt,
-        #         )
-
-        # chain = LLMChain(llm=self.llm, prompt=SELECTION_PROMPT)
-        # type = chain.run({'question': question,
-        #                 'query': sql_query,
-        #                 'total': total,
-        #                 'table': table})
-
-        res = [list(tuple_item) for tuple_item in result]
-
-        type = "chart"
-        if type == "chart":
-            chartObjectPrompt = """
-                Generate the most appropriate chart using the react-chartjs-2 library. 
-
-                Rules:
-                - If the user has sepecifies the type of chart then use that
-                - If the data size is big then you can use a loop to generate the colors randomly 
-                - The JS object should be top level and structured as 
-
-                {{
-                    type: string, //select from [pie, scatter, line, polarArea, doughnut, bar, bubble, radar]
-                    data: {{
-                        labels: res.map(([labels, _]) => labels, // generate list dynamically from res.map(([labels, _]) => labels)
-                        datasets: [{{
-                            data: res.map(([_, data]) => data // generate list dynamically from res.map(([_, data]) => data)
-                        }}]
-                    }},
-                    options: object, -- asign options.title.text and others dynamically
-                }}
-
-                - You must use res.map(([labels, _]) => labels for lables and res.map(([_, data]) => data for data.
-                - This js object should be the sole content of the message, there should be no intermediate variables
-                - The JS object should make use of data from the 'res.rows' object to handle labels, datasets, axes title and others
-                - The JS object should start with '{{' and end with '}}'
-                - The JS object should be syntaxically correct
-                - All keys in the js object must be enclosed in double quotes
-                
-
-                Chat history: {chat_history}
-
-                HUMAN: {Question}
-                Chatbot:
-
-            """
-            np_res = np.array(res)
-            shape = np_res.shape
-            res_ = res[:1]
-            Question = f"The {total} rows generated by the SQL query are stored in 'res'. The first few row are: {res_}. Shape of 'res': {shape}. My Question is {question}"
-            CHART_PROMPT = PromptTemplate(
-                    input_variables=["chat_history", "Question"],
-                    template=chartObjectPrompt,
-                )
-            memoryChart = ConversationBufferMemory(memory_key="chat_history")
-            chain = LLMChain(llm=self.llm, prompt=CHART_PROMPT, memory=memory)
-            np_res = np.array(res)
-            shape = np_res.shape
-            chartObj = chain.predict(Question=Question)
+        if statement and statement.get_type() == "SELECT":
+            inside_select = False
+            select_tokens = []
+            for token in statement.tokens:
+                if token.value.upper() == "SELECT":
+                    inside_select = True
+                    continue
+                if token.value.upper() == "FROM":
+                    inside_select = False
+                    break
+                if inside_select:
+                    select_tokens.append(token)
             
+            # Join tokens to form the portion between SELECT and FROM
+            select_portion = str(sqlparse.sql.TokenList(select_tokens))
+
+            # Strip any leading/trailing whitespace and comma
+            select_portion = select_portion.strip().strip(',')
+
+            columns = select_portion.split(',')
+            columns = [column.strip() for column in columns]
+
+        return columns
 
 
-        elif type == "table":
-            chartObj = self.make_table(result, len(result))
-
-        else:
-            sentencePrompt = """
-                SQL query: {sql_query}  
-                result: {result}
-                Using the given result make a human-sounding sentence replying to the initial question which was: "{question}"
-                
-                The results should be highlighted in bold by adding ** around them.
-
-                Sentence:
-                `;
-                """
-
-            SENTENCE_PROMPT = PromptTemplate(
-                    input_variables=["sql_query", "result", "question"],
-                    template=sentencePrompt,
-                )
-
-            chain = LLMChain(llm=self.llm, prompt=SENTENCE_PROMPT)
-            chartObj = chain.run({'sql_query': sql_query,
-                            'result': result,
-                            "question" : question})
-
-        return {'SQL_QUERY': sql_query, 'DATA': result, 'TYPE': type, 'CHART': chartObj}
+    def chatbot(self, question):    
+        
+            
+        # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+        # memory = ConversationBufferWindowMemory(k=10, return_messages=True, memory_key="chat_history")
+        
+        sql_query = self.SQL_CHAIN.predict(instruction = question)
+        columns = self.extract_columns_from_query(sql_query)
+       
+        result = execute_query(sql_query, self.connection) 
+        print(result)
+        
+        res = [list(tuple_item) for tuple_item in result]
+        # print(memory.load_memory_variables({}))      
+        return {'SQL_QUERY': sql_query, 'DATA': res, 'columns' : columns}
 
 
 

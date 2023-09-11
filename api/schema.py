@@ -1,19 +1,31 @@
 import os
 import psycopg2
 import io
+import psycopg2
 
 def execute_query(query, connection):
     try:
-        
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
-        
         return result
     except psycopg2.Error as e:
-        return str(e)
-    
+        # Handle different types of PostgreSQL errors
+        error_code = e.pgcode
+        error_message = str(e)
+        
+        if error_code:
+            # You can handle specific error codes here if needed
+            if error_code == '42P01':  # Table not found error
+                return f"ERROR: Table not found: {error_message}"
+            else:
+                return f"ERROR: PostgreSQL Error ({error_code}): {error_message}"
+        else:
+            return f"ERROR: PostgreSQL Error: {error_message}"
+    except Exception as e:
+        # Handle other exceptions (e.g., connection errors)
+        return f"ERROR: Database Error: {str(e)}"
 
 
 def get_schema_info(connection):

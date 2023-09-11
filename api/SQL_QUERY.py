@@ -5,6 +5,7 @@ from langchain.prompts.prompt import PromptTemplate
 from db_connectors import PostgresConnector
 from prompt_formatters import Formatter
 
+
 def SQL_QUERY(conn):
   
     TABLES = []
@@ -28,10 +29,12 @@ def SQL_QUERY(conn):
                 HUMAN: {instruction}
                 Chatbot: """
 
-    SQL_QUERY_PROMPT = PromptTemplate(
-                input_variables=["chat_history", "instruction"],
-                template= prompt + question,
-            )
+    # SQL_QUERY_PROMPT = PromptTemplate(
+    #             input_variables=["chat_history", "instruction"],
+    #             template= prompt + question,
+    #         )
+    SQL_QUERY_PROMPT = prompt
+    
     return SQL_QUERY_PROMPT
 
 

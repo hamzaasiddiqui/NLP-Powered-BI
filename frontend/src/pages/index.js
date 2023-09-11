@@ -12,12 +12,17 @@ import { OverviewTotalProfit } from "src/sections/overview/overview-total-profit
 import { OverviewTraffic } from "src/sections/overview/overview-traffic";
 import { useEffect, useState } from "react";
 import { OverviewCard } from "src/sections/overview/overview-card";
-
+import CustomizableLineChart from "../components/CustomizablePieChart";
 const apiUrl = "http://localhost:5000";
 
 const now = new Date();
 
 const Page = () => {
+  const data = [['Beverages', 404], ['Dairy Products', 366], ['Confections', 334], ['Seafood', 330], ['Condiments', 216]];
+  // const data = [[10, 15],[20, 30],[30, 40],[40, 25],[50, 60],];
+  const Xlabel = "X Axis ";
+  const Ylabel = "Y Axis ";
+  const ChartTitle = "Chart";
   const [totalCustomers, setTotalCustomers] = useState(null);
   const [totalRevenue, setTotalRevenue] = useState(null);
   const [totalProfit, setTotalProfit] = useState(null);
@@ -126,6 +131,12 @@ const Page = () => {
         Overview | Keystone
       </title>
     </Head>
+    
+    <div>
+      <h1>Customizable Line Chart Example</h1>
+      <CustomizableLineChart data={data} ChartTitle={ChartTitle} Xlabel={Xlabel} Ylabel={Ylabel}/>
+      
+    </div>
     <Box
       component="main"
       sx={{

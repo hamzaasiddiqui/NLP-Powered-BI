@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 
-const DynamicTable = ({ data, maxHeight }) => {
+const DynamicTable = ({ data, maxHeight, tableHead}) => {
   if (!data || data.length === 0) {
     return <p>No data available.</p>;
   }
@@ -14,7 +14,7 @@ const DynamicTable = ({ data, maxHeight }) => {
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((column, index) => (
+              {tableHead.map((column, index) => (
                 <TableCell key={index}>{column}</TableCell>
               ))}
             </TableRow>
