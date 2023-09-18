@@ -24,7 +24,7 @@ class Chatbot:
             MessagesPlaceholder(variable_name="chat_history"), # Where the memory will be stored.
             HumanMessagePromptTemplate.from_template("{instruction}"), # Where the human input will injected
         ])
-        self.memory = ConversationBufferWindowMemory(k=10, return_messages=True, memory_key="chat_history")
+        self.memory = ConversationBufferWindowMemory(k=3, return_messages=True, memory_key="chat_history")
         self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
     def make_table(self, res, size=1):
         max_name_length = max(len(name) for name, _ in res)
