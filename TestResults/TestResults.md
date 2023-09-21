@@ -32,6 +32,7 @@ SELECT EXTRACT(MONTH FROM 0.order_date) AS month, SUM((od.unit_price - od.discou
 2022 AND EXTRACT(MONTH FROM o.order_date) >= 10 GROUP BY EXTRACT (MONTH FROM o.order_date) ORDER BY month ASC;
 
 Result: Negative
+
 Comments: months taken as ascending
 
 ### 5. show the results for the last query in ascending order
@@ -44,6 +45,7 @@ SQL QUERY GENERATED:
 SELECT SUM((od.unit_price - od.discount) * od.quantity) AS total_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE o.order_date >= CURRENT_DATE - INTERVAL '3 months';
 
 Result: Could not retrieve data
+
 Comments: Interval taken of 3 months but from current date not the year 2022.
 
 ### 7. show the profit for the last three months of the year 2022 in ascending order
@@ -60,6 +62,7 @@ SQL QUERY GENERATED:
 SELECT EXTRACT(MONTH FROM 0.order_date) AS month, SUM((od.unit_price - od.discount) * od.quantity) AS monthly_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT(YEAR FROM o.order_date) = 2022 AND EXTRACT(MONTH FROM 0.order_date) >= 10 GROUP BY EXTRACT (MONTH FROM o.order_date);
 
 Result: Negative
+
 Comments: It seems that Sum was only used for monthly profit calculation
 
 ### 9. show the total sum of monthly profit for the last three months of the year 2022
@@ -70,6 +73,7 @@ SQL QUERY GENERATED:
 SELECT SUM((od.unit_price - od.discount) * od.quantity) AS total_monthly_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT (YEAR FROM o.order_date) = 2022 AND EXTRACT (MONTH FROM o.order_date) >= 10;
 
 Result: Positive
+
 Comments: Component for single value yet to be made.
 
 ## Query test for Best Categories
@@ -91,6 +95,7 @@ Result: Positive
 ![Alt text](image-14.png)
 
 Result: Positive
+
 Comments: Ascending order done on last query.
 
 ### 4. show in descending order
@@ -98,6 +103,7 @@ Comments: Ascending order done on last query.
 ![Alt text](image-15.png)
 
 Result: Positive
+
 Comments: Descending order done on last query.
 
 ### 4. show the top 3 from the last query
@@ -105,6 +111,7 @@ Comments: Descending order done on last query.
 ![Alt text](image-16.png)
 
 Result: Positive
+
 Comments: action performed on last query.
 
 ### 5. show the worst category
@@ -112,6 +119,7 @@ Comments: action performed on last query.
 ![Alt text](image-18.png)
 
 Result: Positive
+
 Comments: worst categary taken from list of all categories.
 
 ## Query test for number of orders
@@ -133,6 +141,7 @@ SQL QUERY GENERATED:
 SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders GROUP BY EXTRACT(month FROM order_date) ORDER BY EXTRACT(month FROM order_date);
 
 Result: Negative
+
 Comments: Ideal solution was to give the monthly orders for the year; however, the bot gave monthly orders for the last 12 months.
 
 ### 3. give me the monthly orders for the year 2022
@@ -143,6 +152,7 @@ SQL QUERY GENERATED:
 SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders WHERE EXTRACT(year FROM order_date) = 2022 GROUP BY EXTRACT(month FROM order_date) ORDER BY month ASC;
 
 Result: Positive
+
 comments: The natural language input was more explicit in this example. Thus, producing the intended result.
 
 ### 4. show in descending order
@@ -153,6 +163,7 @@ SQL QUERY GENERATED:
 SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders WHERE EXTRACT(year FROM order_date) = 2022 GROUP BY EXTRACT(month FROM order_date) ORDER BY month DESC;
 
 Result: Negative
+
 Comments: In this test, the bot generated a query which resulted in ordering the months in descending order. The intention was to order the monthly revenue. The good thing that context of the year 2022 was maintained.
 
 ### 5. show the monthly orders in descending orders
@@ -163,6 +174,7 @@ SQL QUERY GENERATED:
 SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders GROUP BY EXTRACT(month FROM order_date) ORDER BY total_orders DESC;
 
 Result: Positive
+
 Comments: The natural language input was more explicit in this example. Thus, producing the intended result.
 
 ## Query test for best categories
@@ -175,6 +187,7 @@ SQL QUERY GENERATED:
 SELECT category_name, COUNT(*) as total_products FROM categories GROUP BY category_name ORDER BY total_products DESC LIMIT 5;
 
 Result: Negative
+
 Comments: Incorrect query generated because it was not clear in prompt on how to categarize the categaries as best.
 
 ### 2. Show the best categories according to the category's sales
@@ -185,6 +198,7 @@ SQL QUERY GENERATED:
 SELECT c.category_name, SUM(od.quantity * od.unit_price) as total_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY total_sales DESC LIMIT 5;
 
 Result: Positive
+
 Comments: This time the prompt was clear that we wanted to retrieve the best categories according to their sales; hence, the intended output.
 
 ### 3. show in descending order
@@ -195,6 +209,7 @@ SQL QUERY GENERATED:
 SELECT c.category_name, SUM(od.quantity * od.unit_price) as total_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY total_sales DESC;
 
 Result: Negative
+
 Comments: Context of 'top 3' was not maintained. The output shows all of the categories.
 
 ### 4. show the top 3 best categories in descending order in accordance to their number of sales
@@ -205,6 +220,7 @@ SQL QUERY GENERATED:
 SELECT c.category_name, COUNT(*) as number_of_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY number_of_sales DESC LIMIT 3;
 
 Result: Positive
+
 Comments: Making the prompt more explicit produced the intended result.
 
 ## CONCLUSIONS:
