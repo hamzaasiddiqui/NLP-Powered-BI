@@ -164,3 +164,53 @@ SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders 
 
 Result: Positive
 Comments: The natural language input was more explicit in this example. Thus, producing the intended result.
+
+## Query test for best categories
+
+### 1. show the best categories
+
+![Alt text](image-24.png)
+
+SQL QUERY GENERATED:
+SELECT category_name, COUNT(*) as total_products FROM categories GROUP BY category_name ORDER BY total_products DESC LIMIT 5;
+
+Result: Negative
+Comments: Incorrect query generated because it was not clear in prompt on how to categarize the categaries as best.
+
+### 2. Show the best categories according to the category's sales
+
+![Alt text](image-25.png)
+
+SQL QUERY GENERATED:
+SELECT c.category_name, SUM(od.quantity * od.unit_price) as total_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY total_sales DESC LIMIT 5;
+
+Result: Positive
+Comments: This time the prompt was clear that we wanted to retrieve the best categories according to their sales; hence, the intended output.
+
+### 3. show in descending order
+
+![Alt text](image-27.png)
+
+SQL QUERY GENERATED:
+SELECT c.category_name, SUM(od.quantity * od.unit_price) as total_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY total_sales DESC;
+
+Result: Negative
+Comments: Context of 'top 3' was not maintained. The output shows all of the categories.
+
+### 4. show the top 3 best categories in descending order in accordance to their number of sales
+
+![Alt text](image-28.png)
+
+SQL QUERY GENERATED:
+SELECT c.category_name, COUNT(*) as number_of_sales FROM categories c JOIN products p ON c.category_id = p.category_id JOIN order_details od ON p.product_id = od.product_id GROUP BY c.category_name ORDER BY number_of_sales DESC LIMIT 3;
+
+Result: Positive
+Comments: Making the prompt more explicit produced the intended result.
+
+## CONCLUSIONS:
+1. Better prompts result in better outputs.
+2. More explicit details on what the user wants make a prompt better.
+3. It is difficult to maintain context when dealing with complex queries.
+4. However, during the test for Northwind database, it was suprisingly easy to improve prompts after facing an unintended result.
+5. It might be difficult for the user to improve prompts if the database is complex.
+6. In short, the tests for the northwind database show that the OpenAI model works well.
