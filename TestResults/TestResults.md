@@ -113,3 +113,54 @@ Comments: action performed on last query.
 
 Result: Positive
 Comments: worst categary taken from list of all categories.
+
+## Query test for number of orders
+
+### 1. give me the total number of orders fort the year 2022
+
+![Alt text](image-19.png)
+
+SQL QUERY GENERATED:
+SELECT COUNT(order_id) AS total_orders FROM orders WHERE EXTRACT(year FROM order_date) = 2022;
+
+Result: Positive
+
+### 2. give me the monthly orders
+
+![Alt text](image-20.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders GROUP BY EXTRACT(month FROM order_date) ORDER BY EXTRACT(month FROM order_date);
+
+Result: Negative
+Comments: Ideal solution was to give the monthly orders for the year; however, the bot gave monthly orders for the last 12 months.
+
+### 3. give me the monthly orders for the year 2022
+
+![Alt text](image-21.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders WHERE EXTRACT(year FROM order_date) = 2022 GROUP BY EXTRACT(month FROM order_date) ORDER BY month ASC;
+
+Result: Positive
+comments: The natural language input was more explicit in this example. Thus, producing the intended result.
+
+### 4. show in descending order
+
+![Alt text](image-22.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders WHERE EXTRACT(year FROM order_date) = 2022 GROUP BY EXTRACT(month FROM order_date) ORDER BY month DESC;
+
+Result: Negative
+Comments: In this test, the bot generated a query which resulted in ordering the months in descending order. The intention was to order the monthly revenue. The good thing that context of the year 2022 was maintained.
+
+### 5. show the monthly orders in descending orders
+
+![Alt text](image-23.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(month FROM order_date) AS month, COUNT(order_id) AS total_orders FROM orders GROUP BY EXTRACT(month FROM order_date) ORDER BY total_orders DESC;
+
+Result: Positive
+Comments: The natural language input was more explicit in this example. Thus, producing the intended result.
