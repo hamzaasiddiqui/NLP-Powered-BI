@@ -18,15 +18,18 @@ Result: Positive
 
 ![Result 3](image-2.png)
 
-![Result 4](image-4.png)
+SQL QUERY GENERATED:
+SELECT EXTRACT(MONTH FROM 0.order_date) AS month, SUM((od.unit_price - od.discount) *od.quantity) AS profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT(YEAR FROM 0.order_date) = 2022 AND EXTRACT(MONTH FROM o.order_date) >= 10 GROUP BY EXTRACT (MONTH FROM 0.order_date) ORDER BY month;
 
 Result: Positive
 
 ### 4. show the result in ascending order
 
-![Result 5](image-5.png)
-
 ![Result 6](image-3.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(MONTH FROM 0.order_date) AS month, SUM((od.unit_price - od.discount) * od.quantity) AS profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT(YEAR FROM 0.order_date) =
+2022 AND EXTRACT(MONTH FROM o.order_date) >= 10 GROUP BY EXTRACT (MONTH FROM o.order_date) ORDER BY month ASC;
 
 Result: Negative
 Comments: months taken as ascending
@@ -37,7 +40,8 @@ Result: Same as 4.
 
 ### 6. what is the sum
 
-![Alt text](image-6.png)
+SQL QUERY GENERATED:
+SELECT SUM((od.unit_price - od.discount) * od.quantity) AS total_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE o.order_date >= CURRENT_DATE - INTERVAL '3 months';
 
 Result: Could not retrieve data
 Comments: Interval taken of 3 months but from current date not the year 2022.
@@ -50,18 +54,20 @@ Result: Positive
 
 ### 8. show the sum of monthly profit for the last three months of the year 2022
 
-![Alt text](image-8.png)
-
 ![Alt text](image-9.png)
+
+SQL QUERY GENERATED:
+SELECT EXTRACT(MONTH FROM 0.order_date) AS month, SUM((od.unit_price - od.discount) * od.quantity) AS monthly_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT(YEAR FROM o.order_date) = 2022 AND EXTRACT(MONTH FROM 0.order_date) >= 10 GROUP BY EXTRACT (MONTH FROM o.order_date);
 
 Result: Negative
 Comments: It seems that Sum was only used for monthly profit calculation
 
 ### 9. show the total sum of monthly profit for the last three months of the year 2022
 
-![Alt text](image-10.png)
-
 ![Alt text](image-11.png)
+
+SQL QUERY GENERATED:
+SELECT SUM((od.unit_price - od.discount) * od.quantity) AS total_monthly_profit FROM orders o JOIN order_details od ON o.order_id = od.order_id WHERE EXTRACT (YEAR FROM o.order_date) = 2022 AND EXTRACT (MONTH FROM o.order_date) >= 10;
 
 Result: Positive
 Comments: Component for single value yet to be made.
