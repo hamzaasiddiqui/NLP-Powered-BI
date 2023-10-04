@@ -28,25 +28,29 @@ import DynamicTable from "./table";
 axios.defaults.baseURL = "http://localhost:5000";
 var columns = null;
 var SQL_QUERY = null;
-var DATA = null;
-function selectColumns(inputArray, columnIndex1, columnIndex2) {
+let DATA = null;
+function selectColumns(inputArray, columnIndex1) {
   if (!Array.isArray(inputArray) || inputArray.length === 0) {
     throw new Error("Invalid input array");
   }
 
   if (
     !Number.isInteger(columnIndex1) ||
-    !Number.isInteger(columnIndex2) ||
     columnIndex1 < 0 ||
-    columnIndex2 < 0 ||
-    columnIndex1 >= inputArray[0].length ||
-    columnIndex2 >= inputArray[0].length
+    columnIndex1 >= inputArray[0].length
   ) {
-    throw new Error("Invalid column indexes");
+    throw new Error("Invalid column index");
   }
-
-  const resultArray = inputArray.map((row) => [row[columnIndex1], row[columnIndex2]]);
-  return resultArray;
+  const copyOfData = inputArray.slice();
+  for (let i = 0; i < copyOfData.length; i++) {
+    if (columnIndex1 >= 0 && columnIndex1 < copyOfData[i].length) {
+      [copyOfData[i][columnIndex1], copyOfData[i][0]] = [copyOfData[i][0], copyOfData[i][columnIndex1]];
+      
+    }
+    [columns[0], columns[columnIndex1]] = [columns[columnIndex1], columns[0]];
+  }
+  
+  return copyOfData;
 }
 
 const Chatbot = ({ setIsConnected }) => {
@@ -103,6 +107,7 @@ const Chatbot = ({ setIsConnected }) => {
       DATA = response.data["DATA"];
       SQL_QUERY = response.data["SQL_QUERY"];
       columns = response.data["columns"];
+      
 
       const newBotMessage = {
         id: messages.length + 1,
@@ -137,7 +142,8 @@ const Chatbot = ({ setIsConnected }) => {
   const handleGenerateGraph = (event) => {
     console.log(XAxis);
     console.log(YAxis);
-    const data = selectColumns(DATA, XAxis, YAxis);
+    const data = selectColumns([...DATA], XAxis);
+    console.log(data);
     const newBotMessage = {
       id: messages.length + 1,
       timestamp: new Date(),
@@ -145,7 +151,7 @@ const Chatbot = ({ setIsConnected }) => {
       chart: chart,
       data: data,
       Xlabel: columns[XAxis],
-      Ylabel: columns[YAxis],
+      Ylabel: columns.filter((element, i) => i !== XAxis),
       ChartTitle: "Chart", 
     };
 

@@ -7,6 +7,7 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   const [chartSize, setChartSize] = useState(600);
   const [showLegend, setShowLegend] = useState(false);
   const [showGridLines, setShowGridLines] = useState(true);
+  const [showStack, setShowStack] = useState(false);
 
   // Memoize chart data and options to avoid recalculation on every render
   const getRandomRGBAColor = () => {
@@ -16,17 +17,21 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
     const a = 1;
     return `rgba(${r},${g},${b},${a})`;
   };
+  const datasets = [];
+  for (let i = 1; i < data[0].length; i++) {
+    const subarray = data.map(arr => arr[i]);
+    datasets.push({
+      label: Ylabel[i-1],
+      data: subarray,
+      backgroundColor: getRandomRGBAColor(),
+      borderWidth: 1,
+    });
+  }
+
   const chartData = useMemo(() => {
     return {
-      labels: data.map(([labels, _]) => labels),
-      datasets: [
-        {
-          label: "Dataset",
-          data: data.map(([_, data]) => data),
-          backgroundColor: data.map(() => getRandomRGBAColor()),
-          borderWidth: 1,
-        },
-      ],
+      labels: data.map(arr => arr[0]),
+      datasets: datasets
     };
   }, [data]);
 
@@ -52,19 +57,21 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
           grid: {
             display: showGridLines,
           },
+          stacked: showStack,
         },
         y: {
           title: {
             display: true,
-            text: Ylabel,
+            text: "Y-Axis",
           },
           grid: {
             display: showGridLines,
           },
+          stacked: showStack,
         },
       },
     };
-  }, [showLegend, showGridLines, Xlabel, Ylabel, ChartTitle]);
+  }, [showLegend, showGridLines, showStack, Xlabel, Ylabel, ChartTitle]);
 
   const handleSliderChange = useCallback((event, newValue) => {
     setChartSize(newValue);
@@ -73,7 +80,9 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   const handleLegendChange = useCallback((event) => {
     setShowLegend(event.target.checked);
   }, []);
-
+  const handleShowStack = useCallback((event) => {
+    setShowStack(event.target.checked);
+  }, []);
   const handleGridLinesChange = useCallback((event) => {
     setShowGridLines(event.target.checked);
   }, []);
@@ -97,6 +106,10 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
       <FormControlLabel
         control={<Switch checked={showGridLines} onChange={handleGridLinesChange} />}
         label="Show Grid Lines"
+      />
+      <FormControlLabel
+        control={<Switch checked={showStack} onChange={handleShowStack} />}
+        label="Show Stacked"
       />
       <div className="chart">
         <Bar data={chartData} options={chartOptions} />

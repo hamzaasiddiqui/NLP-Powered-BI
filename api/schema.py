@@ -5,18 +5,20 @@ import psycopg2
 
 def execute_query(query, connection):
     try:
+        
+        if connection.get_transaction_status() == psycopg2.extensions.TRANSACTION_STATUS_INTRANS:
+            connection.rollback()
+
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
         return result
     except psycopg2.Error as e:
-        # Handle different types of PostgreSQL errors
         error_code = e.pgcode
         error_message = str(e)
-        
+        connection.rollback()
         if error_code:
-            # You can handle specific error codes here if needed
             if error_code == '42P01':  # Table not found error
                 return f"ERROR: Table not found: {error_message}"
             else:
@@ -24,7 +26,7 @@ def execute_query(query, connection):
         else:
             return f"ERROR: PostgreSQL Error: {error_message}"
     except Exception as e:
-        # Handle other exceptions (e.g., connection errors)
+        connection.rollback()
         return f"ERROR: Database Error: {str(e)}"
 
 
