@@ -1,9 +1,9 @@
 # NLP-Powered-BI
 Final Year Project.
 
-#NLP Powered Business Intelligence Applications
+# NLP Powered Business Intelligence Applications
 
-##Project Synopsis
+## Project Synopsis
 
 Enterprises and businesses generate large volumes of transactional data stored in multiple data stores belonging to different applications. Business intelligence tools are used to extract actionable insights from these data stores, providing Key Performance Indicators (KPIs), Dashboards, Reports, Analyses, and other valuable information upon which critical business decisions can be made.
 
@@ -13,6 +13,6 @@ This project aims to simplify the BI reporting process by developing an applicat
 
 What sets this project apart is the development of an NLP-based chatbot on top of the application. This chatbot enables end-users to interact with the system in a conversational manner, allowing them to request specific reports, charts, or data without needing any technical expertise. For example, a sales manager can ask for a quarterly revenue report aggregated by sales team and compared with the previous four periods. An HR manager might inquire about the top three reasons for sick leave requests from male staff aged over 45 and receive prompt responses with the relevant data. The project may leverage natural language processing (NLP) libraries like NLTK or SpaCy to implement the chatbot.
 
-##Commercial Potential
+## Commercial Potential
 
 The project holds significant commercial potential as it addresses a real-world problem encountered by businesses worldwide. Gradually, this project can be productized by adding more features and functionalities. An intriguing extension of this project is to include popular applications as backend databases, retrieve data via APIs, and create business intelligence artifacts by cross-referencing data from different sources. For example, it could combine accounting data from applications like Quickbooks or Xero with sales/customer data from Hubspot (CRM) to offer meaningful insights. The project can continually expand its roster of compatible applications to cater to a broader market in the future.
