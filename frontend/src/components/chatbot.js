@@ -189,17 +189,39 @@ const Chatbot = ({ setIsConnected }) => {
                     <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
                   )}
                   <Box>
+                    
                     {message.sender === "bot" && message.chart == null ? (
-                      <Typography variant="h6" fontWeight="bold">
+                      <>
+                      {/* <Typography variant="h6" fontWeight="bold">
                         SQL QUERY GENERATED:{" "}
-                      </Typography>
+                      </Typography> */}
+                      <Accordion>
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="panel1a-content"
+                          id="panel1a-header"
+                        >
+                          <Typography>View Generated SQL Query</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Typography>{message.SQL_QUERY}</Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                      <Accordion>
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="panel1a-content"
+                          id="panel1a-header"
+                        >
+                          <Typography>View Retrieved Data From Query</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          {DATA && (<DynamicTable data={DATA} tableHead={columns} maxHeight={300} />)} 
+                        </AccordionDetails>
+                      </Accordion>
+                      </>
                     ) : (
                       <Typography>{message.text}</Typography>
-                    )}
-                    {message.sender === "bot" && message.chart == null ? (
-                      <Typography>{message.SQL_QUERY}</Typography>
-                    ) : (
-                      <></>
                     )}
                     {message.sender === "bot" && message.chart != null ? (
                       <CustomizableChart chartType={message.chart} data={message.data} Xlabel={message.Xlabel} Ylabel={message.Ylabel} ChartTitle={message.ChartTitle}/>
@@ -230,7 +252,7 @@ const Chatbot = ({ setIsConnected }) => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth>
+            {/* <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" size="small">
                 Select Chart
               </InputLabel>
@@ -246,13 +268,13 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value="Line">Line Chart</MenuItem>
                 <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
                 <MenuItem value="Scatter">Scatter Plot</MenuItem>
-                {/* <MenuItem value="Bubble">Bubble Chart</MenuItem> */}
+                
                 <MenuItem value="Radar">Radar Chart</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
 
             {/* Select Model */}
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" size="small">
                 Select Model
               </InputLabel>
@@ -270,7 +292,7 @@ const Chatbot = ({ setIsConnected }) => {
               </Select>
             </FormControl>
             {/* Select Visualization */}
-            <FormControl fullWidth size="small">
+            {/* <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Select Visualization</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
@@ -284,7 +306,7 @@ const Chatbot = ({ setIsConnected }) => {
                   D3
                 </MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
           </Stack>
           <Stack direction="row" spacing={2} alignItems="center">
             <TextField
@@ -340,14 +362,29 @@ const Chatbot = ({ setIsConnected }) => {
                   ))}
                 </Select>
               </FormControl>
+              <FormControl fullWidth size="small">
+              <InputLabel id="demo-simple-select-label" size="small">
+                Select Chart
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={chart}
+                label="Age"
+                onChange={handleChartChange}
+              >
+                <MenuItem value="Bar">Bar Chart</MenuItem>
+                <MenuItem value="Pie">Pie Chart</MenuItem>
+                <MenuItem value="Line">Line Chart</MenuItem>
+                <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
+                <MenuItem value="Scatter">Scatter Plot</MenuItem>
+                {/* <MenuItem value="Bubble">Bubble Chart</MenuItem> */}
+                <MenuItem value="Radar">Radar Chart</MenuItem>
+              </Select>
+            </FormControl>
               <Button onClick={handleGenerateGraph}>Generate Graph</Button>
             </Stack>
           )}
-          <div>
-            <h4>SQL Query Results</h4>
-
-            {DATA && (<DynamicTable data={DATA} tableHead={columns} maxHeight={300} />)}
-          </div>
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
