@@ -57,7 +57,7 @@ const Chatbot = ({ setIsConnected }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [model, setModel] = useState("GPT 3.5");
+  const [model, setModel] = useState("GPT3.5");
   const [visualization, setVisualization] = useState("Chart.js");
   const [chart, setChart] = useState("Bar");
   const [XAxis, setXAxis] = useState(0);
@@ -100,8 +100,10 @@ const Chatbot = ({ setIsConnected }) => {
     setNewMessage("");
 
     try {
+      console.log(model);
       const response = await axios.post("http://localhost:5000/chatbot", {
         query: newMessage,
+        model: model,
       });
 
       DATA = response.data["DATA"];
@@ -117,6 +119,7 @@ const Chatbot = ({ setIsConnected }) => {
         data: DATA,
         SQL_QUERY: SQL_QUERY,
         columns: columns,
+        model: model,
       };
 
       setMessages((prevMessages) => [...prevMessages, newBotMessage]);
@@ -285,9 +288,9 @@ const Chatbot = ({ setIsConnected }) => {
                 label="Age"
                 onChange={handleModelChange}
               >
-                <MenuItem value="GPT 3.5">GPT 3.5</MenuItem>
-                <MenuItem value="Lamma 2" disabled>
-                  Lamma 2
+                <MenuItem value="GPT3.5">GPT 3.5</MenuItem>
+                <MenuItem value="Defog">
+                  Defog
                 </MenuItem>
               </Select>
             </FormControl>

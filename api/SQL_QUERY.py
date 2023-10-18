@@ -21,7 +21,7 @@ def SQL_QUERY(conn):
     formatter = Formatter(db_schema)
 
 
-    prompt = formatter.format_prompt()
+    prompt, tables_schema = formatter.format_prompt()
 
     question = """Chat history: {chat_history}
                 
@@ -35,6 +35,6 @@ def SQL_QUERY(conn):
     #         )
     SQL_QUERY_PROMPT = prompt
     
-    return SQL_QUERY_PROMPT
+    return SQL_QUERY_PROMPT, tables_schema
 
 

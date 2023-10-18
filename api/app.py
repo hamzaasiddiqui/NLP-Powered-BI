@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot import Chatbot
+import requests
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -20,7 +23,7 @@ connection = None
 chatbot_ = None
 openai_api_key = None
 # openai_api_key = os.getenv('OPENAI_API_KEY')
-
+ 
 @app.route('/api/connectDB', methods=['POST'])
 def connect_to_db():
     global connection
@@ -87,9 +90,10 @@ def chatbot():
     
     global chatbot_
     query = request.get_json().get('query')
+    model = request.get_json().get('model')
     if query:
         
-        result = chatbot_.chatbot(query)
+        result = chatbot_.chatbot(query, model)
         
         print(result)
         return jsonify(result)

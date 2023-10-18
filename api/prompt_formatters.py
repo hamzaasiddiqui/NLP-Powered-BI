@@ -84,7 +84,7 @@ class Formatter:
         - Pay attention to use CURRENT_DATE function to get the current date, if the question involves "today"
         - Your response should be a SQL query and nothing else.
         - Donot make up table and column names by yourself. 
-        \n\n"""  # noqa: E501
+        \n\n"""  , self.table_str# noqa: E501
 
     def format_model_output(self, output_sql: str) -> str:
         """Format model output.

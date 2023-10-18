@@ -26,8 +26,8 @@ export default function BasicCard({ setIsConnected }) {
     database: "",
     user: "",
     password: "",
-    databaseUrl: "",
-    openai_api_key: "",
+    databaseUrl: "postgres://puttplgt:BliGMxjlgIxuqLudrJb56yVWm8p1Uq5U@lucky.db.elephantsql.com/puttplgt",
+    openai_api_key: "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",
   });
 
   const handleSubmit = async (e) => {

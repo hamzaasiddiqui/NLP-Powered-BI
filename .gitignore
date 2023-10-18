@@ -13,3 +13,5 @@ api/__pycache__
 frontend/node_modules
 
 frontend/.next
+
+api/.env
