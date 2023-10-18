@@ -15,7 +15,7 @@ import SQL_QUERY
 import numpy as np
 import Defog
 import sqlparse
-defog_url = "http://10.1.131.235:5000/run_defog"
+
 
 class Chatbot:
     def __init__(self, openai_api_key, conn):
