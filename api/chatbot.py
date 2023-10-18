@@ -85,8 +85,6 @@ Response:
     def chatbot(self, question, model):    
         
             
-        # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-        # memory = ConversationBufferWindowMemory(k=10, return_messages=True, memory_key="chat_history")
         if model == "GPT3.5":
             self.llm = ChatOpenAI(temperature=0.2, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
             self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
@@ -98,20 +96,14 @@ Response:
             sql_query = defog.run()
             self.memory.chat_memory.add_user_message(question)
             self.memory.chat_memory.add_ai_message(sql_query)
-
-            # self.memory.save_context({"input": question}, { "output": sql_query })
-            
-
-            
-
-        
+      
         columns = self.extract_columns_from_query(sql_query)
        
         result = execute_query(sql_query, self.connection) 
         print(result)
         
         res = [list(tuple_item) for tuple_item in result]
-        # print(memory.load_memory_variables({}))      
+    
         return {'SQL_QUERY': sql_query, 'DATA': res, 'columns' : columns}
 
 

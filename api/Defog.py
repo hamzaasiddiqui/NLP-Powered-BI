@@ -25,9 +25,7 @@ This query will run on a database whose schema is represented in this string:
 ### SQL
 Given the database schema, here is the SQL query that answers {self.question}:
 ```sql
-"""
-
-        
+"""  
 
         data = {
             "prompt": prompt,

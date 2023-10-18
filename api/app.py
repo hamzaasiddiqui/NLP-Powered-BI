@@ -22,7 +22,6 @@ load_dotenv()
 connection = None
 chatbot_ = None
 openai_api_key = None
-# openai_api_key = os.getenv('OPENAI_API_KEY')
  
 @app.route('/api/connectDB', methods=['POST'])
 def connect_to_db():
