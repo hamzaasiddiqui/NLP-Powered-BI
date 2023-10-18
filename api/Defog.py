@@ -27,7 +27,7 @@ Given the database schema, here is the SQL query that answers {self.question}:
 ```sql
 """
 
-        print(prompt)
+        
 
         data = {
             "prompt": prompt,

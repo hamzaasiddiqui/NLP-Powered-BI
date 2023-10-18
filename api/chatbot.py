@@ -91,15 +91,16 @@ Response:
             self.llm = ChatOpenAI(temperature=0.2, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
             self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
             sql_query = self.SQL_CHAIN.predict(instruction = question)
+            sql_query = sql_query.split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
         elif model == "Defog":
-            print(self.memory.load_memory_variables({}))
+            
             defog = Defog.Defog(question, self.SCHEMA, self.memory.load_memory_variables({}))
             sql_query = defog.run()
             self.memory.chat_memory.add_user_message(question)
             self.memory.chat_memory.add_ai_message(sql_query)
 
             # self.memory.save_context({"input": question}, { "output": sql_query })
-            print(self.memory.load_memory_variables({}))
+            
 
             
 
