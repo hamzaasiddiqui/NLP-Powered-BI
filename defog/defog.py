@@ -40,9 +40,7 @@ class Defog:
 
         outputs = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
         torch.cuda.empty_cache()
-        # print(sqlparse.format(outputs[0].split("```sql")[-1], reindent=True))
-        # Extract and return the SQL query from the model's output
-        # return outputs[0].split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
+       
         return outputs[0].split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
-        # return sqlparse.format(outputs[0].split("```sql")[-1], reindent=True)
+       
         
