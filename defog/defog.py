@@ -25,22 +25,7 @@ class Defog:
         )
         torch.cuda.empty_cache()
 
-    def run(self, question, database_schema):
-        prompt = f"""### Task
-Generate a SQL query to answer the following question:
-`{question}`
-
-### Database Schema
-This query will run on a database whose schema is represented in this string:
-
-`{database_schema}`
-
-
-### SQL
-Given the database schema, here is the SQL query that answers `{question}`:
-```sql
-        """.format(database_schema=database_schema, question=question)
-
+    def run(self, prompt):
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
         eos_token_id = self.tokenizer.convert_tokens_to_ids(["```"])[0]
 

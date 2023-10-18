@@ -14,8 +14,7 @@ model = defog.Defog()
 def run_defog():
     
     prompt = request.json.get('prompt')
-    database_schema = request.json.get('database_schema')
-    output = model.run(prompt, database_schema)
+    output = model.run(prompt)
     return jsonify(output)
 
 if __name__ == '__main__':

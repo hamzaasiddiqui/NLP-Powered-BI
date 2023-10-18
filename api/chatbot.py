@@ -13,7 +13,7 @@ from langchain.schema import SystemMessage
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 import SQL_QUERY
 import numpy as np
-import requests
+import Defog
 import sqlparse
 defog_url = "http://10.1.131.235:5000/run_defog"
 
@@ -22,12 +22,21 @@ class Chatbot:
         self.openai_api_key = openai_api_key
         self.SQL_QUERY_PROMPT, self.SCHEMA = SQL_QUERY.SQL_QUERY(conn)
         self.connection = conn
-        self.prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=self.SQL_QUERY_PROMPT), # The persistent system prompt
-            MessagesPlaceholder(variable_name="chat_history"), # Where the memory will be stored.
-            HumanMessagePromptTemplate.from_template("{instruction}"), # Where the human input will injected
-        ])
-        self.memory = ConversationBufferWindowMemory(k=3, return_messages=True, memory_key="chat_history")
+        # self.prompt = ChatPromptTemplate.from_messages([
+        #     SystemMessage(content=self.SQL_QUERY_PROMPT), # The persistent system prompt
+        #     MessagesPlaceholder(variable_name="chat_history"), # Where the memory will be stored.
+        #     HumanMessagePromptTemplate.from_template("{instruction}"), # Where the human input will injected
+        # ])
+        self.template = self.SQL_QUERY_PROMPT + """
+Previous conversation:
+{chat_history}
+
+New human question: {instruction}
+
+Response:
+""" 
+        self.prompt = PromptTemplate.from_template(self.template)
+        self.memory = ConversationBufferWindowMemory(k=3, memory_key="chat_history")
     def make_table(self, res, size=1):
         max_name_length = max(len(name) for name, _ in res)
         table_str = ""
@@ -70,6 +79,7 @@ class Chatbot:
             columns = [column.strip() for column in columns]
 
         return columns
+    
 
 
     def chatbot(self, question, model):    
@@ -78,16 +88,21 @@ class Chatbot:
         # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         # memory = ConversationBufferWindowMemory(k=10, return_messages=True, memory_key="chat_history")
         if model == "GPT3.5":
-            self.llm = ChatOpenAI(temperature=0.4, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
+            self.llm = ChatOpenAI(temperature=0.2, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
             self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
             sql_query = self.SQL_CHAIN.predict(instruction = question)
         elif model == "Defog":
-            data = {
-                "prompt": question,
-                "database_schema": self.SCHEMA,
-            }
-            response = requests.post(defog_url, json=data)
-            sql_query = response.json()
+            print(self.memory.load_memory_variables({}))
+            defog = Defog.Defog(question, self.SCHEMA, self.memory.load_memory_variables({}))
+            sql_query = defog.run()
+            self.memory.chat_memory.add_user_message(question)
+            self.memory.chat_memory.add_ai_message(sql_query)
+
+            # self.memory.save_context({"input": question}, { "output": sql_query })
+            print(self.memory.load_memory_variables({}))
+
+            
+
         
         columns = self.extract_columns_from_query(sql_query)
        
