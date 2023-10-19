@@ -34,22 +34,20 @@ function selectColumns(inputArray, columnIndex1) {
     throw new Error("Invalid input array");
   }
 
-  if (
-    !Number.isInteger(columnIndex1) ||
-    columnIndex1 < 0 ||
-    columnIndex1 >= inputArray[0].length
-  ) {
+  if (!Number.isInteger(columnIndex1) || columnIndex1 < 0 || columnIndex1 >= inputArray[0].length) {
     throw new Error("Invalid column index");
   }
   const copyOfData = inputArray.slice();
   for (let i = 0; i < copyOfData.length; i++) {
     if (columnIndex1 >= 0 && columnIndex1 < copyOfData[i].length) {
-      [copyOfData[i][columnIndex1], copyOfData[i][0]] = [copyOfData[i][0], copyOfData[i][columnIndex1]];
-      
+      [copyOfData[i][columnIndex1], copyOfData[i][0]] = [
+        copyOfData[i][0],
+        copyOfData[i][columnIndex1],
+      ];
     }
     [columns[0], columns[columnIndex1]] = [columns[columnIndex1], columns[0]];
   }
-  
+
   return copyOfData;
 }
 
@@ -109,7 +107,6 @@ const Chatbot = ({ setIsConnected }) => {
       DATA = response.data["DATA"];
       SQL_QUERY = response.data["SQL_QUERY"];
       columns = response.data["columns"];
-      
 
       const newBotMessage = {
         id: messages.length + 1,
@@ -155,11 +152,10 @@ const Chatbot = ({ setIsConnected }) => {
       data: data,
       Xlabel: columns[XAxis],
       Ylabel: columns.filter((element, i) => i !== XAxis),
-      ChartTitle: "Chart", 
+      ChartTitle: "Chart",
     };
 
     setMessages((prevMessages) => [...prevMessages, newBotMessage]);
-    
   };
 
   return (
@@ -169,7 +165,7 @@ const Chatbot = ({ setIsConnected }) => {
           <Box
             sx={{
               borderRadius: 4,
-              maxHeight: 400,
+              maxHeight: 600,
               overflowY: "scroll",
               p: 4,
               boxShadow: 10,
@@ -192,48 +188,62 @@ const Chatbot = ({ setIsConnected }) => {
                     <Face2Icon sx={{ mr: 3, marginLeft: 5 }} />
                   )}
                   <Box>
-                    
                     {message.sender === "bot" && message.chart == null ? (
                       <>
-                      {/* <Typography variant="h6" fontWeight="bold">
+                        {/* <Typography variant="h6" fontWeight="bold">
                         SQL QUERY GENERATED:{" "}
                       </Typography> */}
-                      <Accordion>
-                        <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
-                          aria-controls="panel1a-content"
-                          id="panel1a-header"
-                        >
-                          <Typography>View Generated SQL Query</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          <Typography>{message.SQL_QUERY}</Typography>
-                        </AccordionDetails>
-                      </Accordion>
-                      <Accordion>
-                        <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
-                          aria-controls="panel1a-content"
-                          id="panel1a-header"
-                        >
-                          <Typography>View Retrieved Data From Query</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          {DATA && (<DynamicTable data={DATA} tableHead={columns} maxHeight={300} />)} 
-                        </AccordionDetails>
-                      </Accordion>
+                        <Accordion>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <Typography>View Generated SQL Query</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Typography>{message.SQL_QUERY}</Typography>
+                          </AccordionDetails>
+                        </Accordion>
+                        <Accordion>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <Typography>View Retrieved Data From Query</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            {message.data && (
+                              <DynamicTable
+                                data={message.data}
+                                tableHead={message.columns}
+                                maxHeight={300}
+                              />
+                            )}
+                          </AccordionDetails>
+                        </Accordion>
                       </>
                     ) : (
                       <Typography>{message.text}</Typography>
                     )}
                     {message.sender === "bot" && message.chart != null ? (
-                      <CustomizableChart chartType={message.chart} data={message.data} Xlabel={message.Xlabel} Ylabel={message.Ylabel} ChartTitle={message.ChartTitle}/>
+                      <CustomizableChart
+                        chartType={message.chart}
+                        data={message.data}
+                        Xlabel={message.Xlabel}
+                        Ylabel={message.Ylabel}
+                        ChartTitle={message.ChartTitle}
+                      />
                     ) : (
                       <></>
                     )}
 
                     <Typography variant="caption" color="textSecondary">
                       {message.timestamp.toLocaleString()}
+                      <span style={{  color: "#1c2536" , marginLeft: '20px'}}>
+                      {message.model}
+                      </span>
                     </Typography>
                   </Box>
                 </Box>
@@ -289,9 +299,7 @@ const Chatbot = ({ setIsConnected }) => {
                 onChange={handleModelChange}
               >
                 <MenuItem value="GPT3.5">GPT 3.5</MenuItem>
-                <MenuItem value="Defog">
-                  Defog
-                </MenuItem>
+                <MenuItem value="Defog">Defog</MenuItem>
               </Select>
             </FormControl>
             {/* Select Visualization */}
@@ -334,7 +342,11 @@ const Chatbot = ({ setIsConnected }) => {
           {columns && columns.length > 0 && (
             <Stack direction="row" spacing={4} alignItems="center">
               <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">{chart === "Pie" || chart === "Radar" || chart === "Doughnut" ? "Select Label" : "Select X-Axis"}</InputLabel>
+                <InputLabel id="demo-simple-select-label">
+                  {chart === "Pie" || chart === "Radar" || chart === "Doughnut"
+                    ? "Select Label"
+                    : "Select X-Axis"}
+                </InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
@@ -350,7 +362,11 @@ const Chatbot = ({ setIsConnected }) => {
                 </Select>
               </FormControl>
               <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">{chart === "Pie" || chart === "Radar" || chart === "Doughnut" ? "Select Dataset" : "Select Y-Axis"}</InputLabel>
+                <InputLabel id="demo-simple-select-label">
+                  {chart === "Pie" || chart === "Radar" || chart === "Doughnut"
+                    ? "Select Dataset"
+                    : "Select Y-Axis"}
+                </InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
@@ -366,25 +382,25 @@ const Chatbot = ({ setIsConnected }) => {
                 </Select>
               </FormControl>
               <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label" size="small">
-                Select Chart
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={chart}
-                label="Age"
-                onChange={handleChartChange}
-              >
-                <MenuItem value="Bar">Bar Chart</MenuItem>
-                <MenuItem value="Pie">Pie Chart</MenuItem>
-                <MenuItem value="Line">Line Chart</MenuItem>
-                <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
-                <MenuItem value="Scatter">Scatter Plot</MenuItem>
-                {/* <MenuItem value="Bubble">Bubble Chart</MenuItem> */}
-                <MenuItem value="Radar">Radar Chart</MenuItem>
-              </Select>
-            </FormControl>
+                <InputLabel id="demo-simple-select-label" size="small">
+                  Select Chart
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={chart}
+                  label="Age"
+                  onChange={handleChartChange}
+                >
+                  <MenuItem value="Bar">Bar Chart</MenuItem>
+                  <MenuItem value="Pie">Pie Chart</MenuItem>
+                  <MenuItem value="Line">Line Chart</MenuItem>
+                  <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
+                  <MenuItem value="Scatter">Scatter Plot</MenuItem>
+                  {/* <MenuItem value="Bubble">Bubble Chart</MenuItem> */}
+                  <MenuItem value="Radar">Radar Chart</MenuItem>
+                </Select>
+              </FormControl>
               <Button onClick={handleGenerateGraph}>Generate Graph</Button>
             </Stack>
           )}
