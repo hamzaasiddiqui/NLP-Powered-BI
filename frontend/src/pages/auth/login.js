@@ -19,10 +19,13 @@ import {
 import { useAuth } from 'src/hooks/use-auth';
 import { Layout as AuthLayout } from 'src/layouts/auth/layout';
 
+import { auth } from "../../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+
 const Page = () => {
   const router = useRouter();
-  const auth = useAuth();
   const [method, setMethod] = useState('email');
+
   const formik = useFormik({
     initialValues: {
       email: 'talhayounas0348@gmail.com',
@@ -42,7 +45,7 @@ const Page = () => {
     }),
     onSubmit: async (values, helpers) => {
       try {
-        await auth.signIn(values.email, values.password);
+        await signInWithEmailAndPassword(auth, values.email, values.password);
         router.push('/');
       } catch (err) {
         helpers.setStatus({ success: false });

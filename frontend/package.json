@@ -29,6 +29,7 @@
     "axios": "^1.4.0",
     "chart.js": "^4.3.3",
     "date-fns": "2.29.3",
+    "firebase": "^10.5.2",
     "formik": "2.2.9",
     "fs": "^0.0.1-security",
     "jsonminify": "^0.4.2",
