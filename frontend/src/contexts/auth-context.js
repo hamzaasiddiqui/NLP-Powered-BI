@@ -1,5 +1,10 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { logInWithEmailAndPassword, logout, auth , registerWithEmailAndPassword, db} from "./../firebase";
+import {
+  getDoc,
+  doc,
+} from "firebase/firestore";
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
@@ -35,6 +40,7 @@ const handlers = {
   },
   [HANDLERS.SIGN_IN]: (state, action) => {
     const user = action.payload;
+
 
     return {
       ...state,
@@ -75,18 +81,26 @@ export const AuthProvider = (props) => {
     let isAuthenticated = false;
 
     try {
-      isAuthenticated = window.sessionStorage.getItem('authenticated') === 'true';
+      isAuthenticated = auth.user;
     } catch (err) {
       console.error(err);
     }
 
     if (isAuthenticated) {
+      const id = isAuthenticated.id.trim();
+      
+      const DocRef = doc(db, "users", id);
+      const docs = await getDoc(DocRef);
+      
+      const userData = docs.data();
+
       const user = {
-        id: '5e86809283e28b96d2d38537',
-        avatar: '/assets/avatars/avatar-talha.png',
-        name: 'Talha Yunus',
-        email: 'talhayounas0348@gmail.com'
+        id: id,
+        avatar: userData.avatar,
+        name: userData.name,
+        email: userData.email
       };
+     
 
       dispatch({
         type: HANDLERS.INITIALIZE,
@@ -107,44 +121,28 @@ export const AuthProvider = (props) => {
     []
   );
 
-  const skip = () => {
+
+  const signIn = async (email, password) => {
     try {
+      await logInWithEmailAndPassword(email, password);
       window.sessionStorage.setItem('authenticated', 'true');
     } catch (err) {
       console.error(err);
-    }
-
-    const user = {
-      id: '5e86809283e28b96d2d38537',
-      avatar: '/assets/avatars/avatar-talha.png',
-      name: 'Talha Yunus',
-      email: 'talhayounas0348@gmail.com'
-    };
-
-    dispatch({
-      type: HANDLERS.SIGN_IN,
-      payload: user
-    });
-  };
-
-  const signIn = async (email, password) => {
-    if (email !== 'talhayounas0348@gmail.com' || password !== 'Password123!') {
       throw new Error('Please check your email and password');
     }
 
-    try {
-      window.sessionStorage.setItem('authenticated', 'true');
-    } catch (err) {
-      console.error(err);
-    }
-
+    const isAuthenticated = auth.currentUser
+    const id = isAuthenticated.uid.trim();
+    const DocRef = doc(db, "users", id);
+    const docs = await getDoc(DocRef);
+    
+    const userData = docs.data();
     const user = {
-      id: '5e86809283e28b96d2d38537',
-      avatar: '/assets/avatars/avatar-talha.png',
-      name: 'Talha Yunus',
-      email: 'talhayounas0348@gmail.com'
+      id: id,
+      avatar: userData.avatar,
+      name: userData.name,
+      email: userData.email
     };
-
     dispatch({
       type: HANDLERS.SIGN_IN,
       payload: user
@@ -152,10 +150,18 @@ export const AuthProvider = (props) => {
   };
 
   const signUp = async (email, name, password) => {
-    throw new Error('Sign up is not implemented');
+    try{
+      await registerWithEmailAndPassword(name, email, password);
+      await signIn(email, password);
+    }catch(err){
+      console.log(err);
+      throw new Error('Please check your email and password');
+    }
   };
 
   const signOut = () => {
+    logout();
+    window.sessionStorage.setItem('authenticated', 'false');
     dispatch({
       type: HANDLERS.SIGN_OUT
     });
@@ -165,7 +171,6 @@ export const AuthProvider = (props) => {
     <AuthContext.Provider
       value={{
         ...state,
-        skip,
         signIn,
         signUp,
         signOut

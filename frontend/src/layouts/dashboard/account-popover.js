@@ -42,7 +42,7 @@ export const AccountPopover = (props) => {
           color="text.secondary"
           variant="body2"
         >
-          Talha Yunus
+          {(auth.user)?auth.user.name:'#'}
         </Typography>
       </Box>
       <Divider />

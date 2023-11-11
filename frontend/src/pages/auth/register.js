@@ -12,6 +12,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const Page = () => {
   const router = useRouter();
+  const auth = useAuth();
 
   const formik = useFormik({
     initialValues: {
@@ -37,7 +38,7 @@ const Page = () => {
     }),
     onSubmit: async (values, helpers) => {
       try {
-        await createUserWithEmailAndPassword(auth, values.email, values.password);
+        await auth.signUp(values.email, values.name, values.password);
         router.push('/');
       } catch (err) {
         helpers.setStatus({ success: false });

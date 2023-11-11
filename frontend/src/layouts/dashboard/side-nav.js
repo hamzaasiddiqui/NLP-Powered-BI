@@ -71,7 +71,7 @@ export const SideNav = (props) => {
                 color="inherit"
                 variant="subtitle1"
               >
-                TeeWhy
+                Keystone
               </Typography>
               
             </div>

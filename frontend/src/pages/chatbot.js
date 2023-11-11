@@ -24,7 +24,7 @@ const Page = () => {
       )}
 
       <Head>
-        <title>Chatbot</title>
+        <title>Chatbot | Keystone</title>
       </Head>
     </>
   );
