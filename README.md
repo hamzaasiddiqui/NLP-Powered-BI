@@ -1,5 +1,5 @@
-# NLP-Powered-BI-APP - https://nlp-bi-app.netlify.app/
-Final Year Project.
+# NLP-Powered-BI-APP 
+Final Year Project - https://nlp-bi-app.netlify.app/
 
 # NLP Powered Business Intelligence Applications
 
