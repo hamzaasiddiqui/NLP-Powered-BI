@@ -1,110 +1,89 @@
-# Create virtual environment
-# Install libraries from requirements.txt in venv
-# pip intall -r requirements.txt
-# Run flask app and test on Insomnia or Postman
-
-import os
 import psycopg2
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 from flask_cors import CORS
 from chatbot import Chatbot
-import requests
+from schema import execute_query
 
+def create_app():
+    app = Flask(__name__)
+    app.config['CORS_HEADER'] = 'Content-Type'
+    CORS(app)
+    CORS(app, origins="http://localhost:3000")
 
+    with app.app_context():
+        # Initialize non-global variables within the app context
+        setattr(current_app, 'connection', None)
+        setattr(current_app, 'chatbot', None)
+        setattr(current_app, 'openai_api_key', None)
+        setattr(current_app, 'schema', None)
 
-app = Flask(__name__)
-CORS(app)
-CORS(app, origins="http://localhost:3000/")
+    return app
 
-app.config['CORS_HEADER'] = 'Content-Type'
-load_dotenv()
-connection = None
-chatbot_ = None
-openai_api_key = None
- 
-@app.route('/api/connectDB', methods=['POST'])
-def connect_to_db():
-    global connection
-    global chatbot_
-    global openai_api_key
-    data = request.json
+def connect_to_db(data):
     connection_type = data.get('connectionType')
 
     try:
-        if connection is None or connection.closed != 0:
-            if connection_type == 'url':  
-                openai_api_key = data.get('openai_api_key')
-                database_url = data.get('databaseUrl')
+        
+        current_app.openai_api_key = data.get('openai_api_key')
+        database_url = data.get('databaseUrl')
+        current_app.schema = data.get('schema')
+        current_app.connection = psycopg2.connect(database_url)
+    
 
-                connection = psycopg2.connect(database_url)
-            else:  # Connect using individual details
-                
-                host = data.get('host')
-                port = data.get('port')
-                database = data.get('database')
-                user = data.get('user')
-                password = data.get('password')
-                connection = psycopg2.connect(
-                    host=host,
-                    port=port,
-                    database=database,
-                    user=user,
-                    password=password
-                )
-            
-            chatbot_ = Chatbot(openai_api_key=openai_api_key, conn=connection)
-            response_data = {'message': 'Connected to the database successfully'}
-            return jsonify(response_data)
+        current_app.chatbot = Chatbot(openai_api_key=current_app.openai_api_key, conn=current_app.connection, schema = current_app.schema)
+        response_data = {'message': 'Connected to the database successfully'}
+        return jsonify(response_data)
+
     except psycopg2.Error as e:
         error_message = str(e)
         return jsonify({'error': error_message}), 500
 
-
-
-# Route to close DB connection
-# FOR FUTURE DEVELOPMENT
-@app.route('/api/disconnectDB', methods=['POST'])
 def close_db_connection():
-    global connection
-
-    if connection:
-        connection.close()
-        connection = None
-
+    if current_app.connection:
+        current_app.connection.close()
+        current_app.connection = None
         print('DISCONNECTED')
-        print(connection)
-
-        response_data = {'message': 'Data received successfully'}  # Create a response dictionary
-
+        response_data = {'message': 'Disconnected from the database successfully'}
         return jsonify(response_data)
     else:
-        response_data = {'message': 'No databse to disconnect'}  # Create a response dictionary
-
+        response_data = {'message': 'No database to disconnect'}
         return jsonify(response_data)
 
-
-@app.route('/chatbot', methods=['POST'])
-def chatbot():
-    
-    global chatbot_
-    query = request.get_json().get('query')
-    model = request.get_json().get('model')
-    if query:
-        
-        result = chatbot_.chatbot(query, model)
-        
-        print(result)
+def chatbot(query, model):
+    if current_app.connection and current_app.chatbot:
+        result = current_app.chatbot.chatbot(query, model)
         return jsonify(result)
     else:
+        return jsonify({'error': 'Database not connected'}), 500
+
+app = create_app()
+
+@app.route('/api/connectDB', methods=['POST'])
+def api_connect_db():
+    data = request.json
+    return connect_to_db(data)
+
+@app.route('/api/disconnectDB', methods=['POST'])
+def api_disconnect_db():
+    return close_db_connection()
+
+@app.route('/api/SQL', methods=['POST'])
+def run_sql():
+    schema = request.get_json().get('schema')
+    sql = request.get_json().get('sql')
+    url = request.get_json().get('url')
+    
+    connection = psycopg2.connect(url)
+    result = execute_query(sql, connection, schema)
+    res = [list(tuple_item) for tuple_item in result]
+    return {'data': res}
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot_route():
+    query = request.get_json().get('query')
+    model = request.get_json().get('model')
+
+    if query:
+        return chatbot(query, model)
+    else:
         return 'Invalid query', 400
-   
-
-@app.get("/")
-def home():
-    return "NLP Powered BI"
-
-
-if __name__ == '__main__':
-    load_dotenv()
-    app.run(debug=True)

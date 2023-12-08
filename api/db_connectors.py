@@ -10,11 +10,11 @@ from prompt_formatters import TableColumn, Table
 
 @dataclass
 class PostgresConnector:
-    def get_tables(self, conn) -> List[str]:
+    def get_tables(self, conn, schema) -> List[str]:
         cursor = conn.cursor()
-        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public';")
+        cursor.execute(f"SELECT table_name FROM information_schema.tables WHERE table_schema='{schema}';")
         table_names = [row[0] for row in cursor.fetchall()]
-        return table_names[1:]
+        return table_names
 
     def get_schema(self, conn, table: str) -> Table:
         """Return Table."""

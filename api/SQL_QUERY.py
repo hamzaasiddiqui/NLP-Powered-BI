@@ -4,16 +4,24 @@ from langchain.chains import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from db_connectors import PostgresConnector
 from prompt_formatters import Formatter
+import chromadb
 
 
-def SQL_QUERY(conn):
-  
+def SQL_QUERY(conn, schema):
+    chroma_client = chromadb.Client()
+    collection_name = "collection"
+
+    if collection_name in chroma_client.list_collections():
+        chroma_client.delete_collection(name=collection_name)
+        print(f"Collection '{collection_name}' deleted successfully.")
+
+    collection = chroma_client.create_collection(name=collection_name)
     TABLES = []
 
     postgres_connector = PostgresConnector()
     
     if len(TABLES) <= 0:
-        TABLES.extend(postgres_connector.get_tables(conn))
+        TABLES.extend(postgres_connector.get_tables(conn, schema))
 
     print(f"Loading tables: {TABLES}")
 
@@ -21,11 +29,16 @@ def SQL_QUERY(conn):
     formatter = Formatter(db_schema)
 
 
-    prompt, tables_schema = formatter.format_prompt()
+    tables_schema = formatter.format_prompt()
+  
 
+    collection.add(
+        documents= tables_schema,
+        metadatas=[{"source": table} for table in TABLES],
+        ids=["id" + str(i + 1) for i in range(len(TABLES))]
+    )
+    return collection, tables_schema
     
-    SQL_QUERY_PROMPT = prompt
-    
-    return SQL_QUERY_PROMPT, tables_schema
+
 
 

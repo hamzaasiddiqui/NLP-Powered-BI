@@ -1,16 +1,18 @@
 import os
 import psycopg2
 import io
-import psycopg2
+from psycopg2 import extensions
 
-def execute_query(query, connection):
+def execute_query(query, connection, schema):
     try:
-        
-        if connection.get_transaction_status() == psycopg2.extensions.TRANSACTION_STATUS_INTRANS:
+        if connection.get_transaction_status() == extensions.TRANSACTION_STATUS_INTRANS:
             connection.rollback()
 
+        # Add the schema to the query
+        query_with_schema = f"SET search_path TO {schema}; {query}"
+
         cursor = connection.cursor()
-        cursor.execute(query)
+        cursor.execute(query_with_schema)
         result = cursor.fetchall()
         cursor.close()
         return result
@@ -30,16 +32,16 @@ def execute_query(query, connection):
         return f"ERROR: Database Error: {str(e)}"
 
 
-def get_schema_info(connection):
+def get_schema_info(connection, schema):
     try:
         
         cursor = connection.cursor()
 
         # Get table names
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT table_name
             FROM information_schema.tables
-            WHERE table_schema = 'public';
+            WHERE table_schema = '{schema}';
         """)
         table_names = cursor.fetchall()
 
@@ -50,7 +52,7 @@ def get_schema_info(connection):
             cursor.execute(f"""
                 SELECT column_name
                 FROM information_schema.columns
-                WHERE table_schema = 'public' AND table_name = '{table_name}';
+                WHERE table_schema = '{schema}' AND table_name = '{table_name}';
             """)
             columns_info = cursor.fetchall()
 
@@ -60,7 +62,7 @@ def get_schema_info(connection):
                 FROM information_schema.table_constraints tc
                 JOIN information_schema.key_column_usage kc
                 ON kc.constraint_name = tc.constraint_name
-                WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = 'public' AND tc.table_name = '{table_name}';
+                WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = '{schema}' AND tc.table_name = '{table_name}';
             """)
             primary_keys_info = cursor.fetchall()
 
@@ -72,7 +74,7 @@ def get_schema_info(connection):
                 ON tc.constraint_name = kcu.constraint_name
                 JOIN information_schema.constraint_column_usage ccu
                 ON tc.constraint_name = ccu.constraint_name
-                WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public' AND tc.table_name = '{table_name}';
+                WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = '{schema}' AND tc.table_name = '{table_name}';
             """)
             foreign_keys_info = cursor.fetchall()
 
