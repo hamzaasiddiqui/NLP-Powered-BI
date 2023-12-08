@@ -15,6 +15,10 @@ import {
   CssBaseline,
   MenuItem,
   Select,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -25,6 +29,17 @@ import ResizableChart from "./chart2";
 import { margin } from "@mui/system";
 import CustomizableChart from "./CustomizableChart";
 import DynamicTable from "./table";
+import { auth, db } from "../firebase";
+import { useAuth } from 'src/hooks/use-auth';
+import {
+  setDoc,
+  doc,
+  getDocs,
+  collection,
+  getDoc,
+  updateDoc
+} from "firebase/firestore";
+
 axios.defaults.baseURL = "http://localhost:5000";
 var columns = null;
 var SQL_QUERY = null;
@@ -51,7 +66,8 @@ function selectColumns(inputArray, columnIndex1) {
   return copyOfData;
 }
 
-const Chatbot = ({ setIsConnected }) => {
+const Chatbot = ({ setIsConnected, databaseUrl }) => {
+  const auth = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -60,6 +76,11 @@ const Chatbot = ({ setIsConnected }) => {
   const [chart, setChart] = useState("Bar");
   const [XAxis, setXAxis] = useState(0);
   const [YAxis, setYAxis] = useState(1);
+  const [isSavePopupOpen, setSavePopupOpen] = useState(false);
+  const [chartTitle, setChartTitle] = useState("");
+  const [selectedDashboard, setSelectedDashboard] = useState("");
+  const [userDashboards, setUserDashboards] = useState([]);
+  const [currentChartConfig, setCurrentChartConfig] = useState(null);
 
   const handleXAxisChange = (event) => {
     setXAxis(event.target.value);
@@ -73,12 +94,81 @@ const Chatbot = ({ setIsConnected }) => {
   const handleModelChange = (event) => {
     setModel(event.target.value);
   };
+  const openSavePopup = () => {
+    setSavePopupOpen(true);
+  };
+  const closeSavePopup = () => {
+    setSavePopupOpen(false);
+  };
+  const handleSaveChart = async () => {
+    const dashboardsCollection = collection(db, 'users', auth.user.id, 'dashboard');
+    const dashboardDoc = doc(dashboardsCollection, selectedDashboard);
 
+    try {
+      const dashboardDocSnap = await getDoc(dashboardDoc);
+      const currentVisualization = dashboardDocSnap.data().visualizations || {};
+      const newVisualization = {
+        ...currentVisualization,
+        [chartTitle]: {
+          sql: currentChartConfig.SQL_QUERY,
+          type: currentChartConfig.chart,
+          xaxis: currentChartConfig.Xlabel,
+          yaxis: currentChartConfig.Ylabel,
+        },
+      };
+      await updateDoc(dashboardDoc, {
+        visualizations: newVisualization,
+      });
+  
+      console.log('ChartConfig added successfully!');
+    } catch (error) {
+      console.error('Error adding chartConfig:', error);
+    }
+    
+
+  
+    // Close the popup after saving
+    closeSavePopup();
+  };
+  const handleSaveButtonClick = (message) => {
+    setCurrentChartConfig(message);
+    openSavePopup();
+  };  
   const handleVisualizationChange = (event) => {
     setVisualization(event.target.value);
   };
 
-  useEffect(() => {}, [messages]);
+  
+  useEffect(() => {
+    const fetchUserDashboards = async () => {
+      console.log(databaseUrl);
+      try {
+        const userDocRef = doc(db, "users", auth.user.id);
+        const dashboardsSnapshot = await getDocs(collection(userDocRef, "dashboard"));
+        
+        const dashboards = [];
+        dashboardsSnapshot.forEach((dashboardDoc) => {
+          const dashboardData = dashboardDoc.data();
+          console.log(dashboardData);
+          
+          if (dashboardData.databaseLink == databaseUrl) {
+            dashboards.push({
+              id: dashboardDoc.id,
+              title: dashboardData.title,
+            });
+          }
+        });
+      console.log(dashboards);
+
+        setUserDashboards(dashboards);
+      } catch (error) {
+        console.error("Error fetching user dashboards:", error);
+      }
+    };
+
+    fetchUserDashboards();
+  }, [auth.user.id, databaseUrl, messages]); // Add dependencies as needed
+
 
   const handleSendMessage = async () => {
     if (isSending || newMessage.trim() === "") {
@@ -153,6 +243,7 @@ const Chatbot = ({ setIsConnected }) => {
       Xlabel: columns[XAxis],
       Ylabel: columns.filter((element, i) => i !== XAxis),
       ChartTitle: "Chart",
+      SQL_QUERY: SQL_QUERY,
     };
 
     setMessages((prevMessages) => [...prevMessages, newBotMessage]);
@@ -228,6 +319,8 @@ const Chatbot = ({ setIsConnected }) => {
                       <Typography>{message.text}</Typography>
                     )}
                     {message.sender === "bot" && message.chart != null ? (
+                      <>
+                      <Button variant="contained" onClick={()=>{handleSaveButtonClick(message)}}>Save</Button>
                       <CustomizableChart
                         chartType={message.chart}
                         data={message.data}
@@ -235,6 +328,7 @@ const Chatbot = ({ setIsConnected }) => {
                         Ylabel={message.Ylabel}
                         ChartTitle={message.ChartTitle}
                       />
+                      </>
                     ) : (
                       <></>
                     )}
@@ -249,42 +343,45 @@ const Chatbot = ({ setIsConnected }) => {
                 </Box>
               ))}
           </Box>
-
+          <Dialog open={isSavePopupOpen} onClose={closeSavePopup}>
+  <DialogTitle>Save Chart</DialogTitle>
+  <DialogContent>
+    <TextField
+      label="Chart Title"
+      value={chartTitle}
+      onChange={(e) => setChartTitle(e.target.value)}
+      fullWidth
+      margin="normal"
+    />
+    <FormControl fullWidth margin="normal">
+            <InputLabel id="dashboard-select-label">Select Dashboard</InputLabel>
+            <Select
+              labelId="dashboard-select-label"
+              id="dashboard-select"
+              value={selectedDashboard}
+              onChange={(e) => setSelectedDashboard(e.target.value)}
+            >
+              {userDashboards.map((dashboard) => (
+                <MenuItem key={dashboard.id} value={dashboard.id}>
+                  {dashboard.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={closeSavePopup} color="primary">
+      Cancel
+    </Button>
+    <Button onClick={handleSaveChart} color="primary">
+      Save
+    </Button>
+  </DialogActions>
+</Dialog>
           <Stack direction="row" spacing={2} alignItems="center">
-            {/* Select Database */}
-            <FormControl fullWidth size="small" disabled>
-              <InputLabel id="demo-simple-select-label">Select Database</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                // value={}
-                label="Age"
-                // onChange={}
-              >
-                <MenuItem value={10}>Northwind</MenuItem>
-              </Select>
-            </FormControl>
+           
 
-            {/* <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label" size="small">
-                Select Chart
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={chart}
-                label="Age"
-                onChange={handleChartChange}
-              >
-                <MenuItem value="Bar">Bar Chart</MenuItem>
-                <MenuItem value="Pie">Pie Chart</MenuItem>
-                <MenuItem value="Line">Line Chart</MenuItem>
-                <MenuItem value="Doughnut">Doughnut Chart</MenuItem>
-                <MenuItem value="Scatter">Scatter Plot</MenuItem>
-                
-                <MenuItem value="Radar">Radar Chart</MenuItem>
-              </Select>
-            </FormControl> */}
+            
 
             {/* Select Model */}
             <FormControl fullWidth size="small">
@@ -302,22 +399,7 @@ const Chatbot = ({ setIsConnected }) => {
                 <MenuItem value="Defog">Defog</MenuItem>
               </Select>
             </FormControl>
-            {/* Select Visualization */}
-            {/* <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label">Select Visualization</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={visualization}
-                label="Age"
-                onChange={handleVisualizationChange}
-              >
-                <MenuItem value="Chart.js">Chart.js</MenuItem>
-                <MenuItem value="D3" disabled>
-                  D3
-                </MenuItem>
-              </Select>
-            </FormControl> */}
+          
           </Stack>
           <Stack direction="row" spacing={2} alignItems="center">
             <TextField
