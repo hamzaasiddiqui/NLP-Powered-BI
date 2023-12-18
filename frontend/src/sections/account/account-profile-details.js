@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,35 +10,23 @@ import {
   TextField,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-
-const states = [
-  {
-    value: 'kpk',
-    label: 'KPK'
-  },
-  {
-    value: 'punjab',
-    label: 'Punjab'
-  },
-  {
-    value: 'balochistan',
-    label: 'Balochistan'
-  },
-  {
-    value: 'sindh',
-    label: 'Sindh'
-  }
-];
+import { auth, db } from "../../firebase";
+import { useAuth } from 'src/hooks/use-auth';
+import {
+  setDoc,
+  doc
+} from "firebase/firestore";
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 export const AccountProfileDetails = () => {
+  const auth = useAuth();
+
   const [values, setValues] = useState({
-    firstName: 'Talha',
-    lastName: 'Yunus',
-    email: 'talhayounas0348@gmail.com',
-    phone: '',
-    state: 'kpk',
-    country: 'PK'
+    name: (auth.user) ? auth.user.name : '',
+    email: (auth.user) ? auth.user.email : '',
   });
+
+  const [opacity, setOpacity] = useState(0);
 
   const handleChange = useCallback(
     (event) => {
@@ -50,19 +38,23 @@ export const AccountProfileDetails = () => {
     []
   );
 
-  const handleSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
-    },
-    []
-  );
+  const handleSubmit = async () => {
+    if (!(auth.user.name === values.name && auth.user.email === values.email) && auth.user) {
+      const id = auth.user.id.trim();
+      auth.user.name = values.name;
+      auth.user.email = values.email;
+      await setDoc(doc(db, "users", id), {
+        name: values.name,
+        email: values.email
+      }, { merge: true });
+
+      setOpacity(1);
+    }
+  }
+
 
   return (
-    <form
-      autoComplete="off"
-      noValidate
-      onSubmit={handleSubmit}
-    >
+    <>
       <Card>
         <CardHeader
           subheader="The information can be edited"
@@ -80,25 +72,11 @@ export const AccountProfileDetails = () => {
               >
                 <TextField
                   fullWidth
-                  helperText="Please specify the first name"
-                  label="First name"
-                  name="firstName"
+                  label="Full Name"
+                  name="name"
                   onChange={handleChange}
                   required
-                  value={values.firstName}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Last name"
-                  name="lastName"
-                  onChange={handleChange}
-                  required
-                  value={values.lastName}
+                  value={values.name}
                 />
               </Grid>
               <Grid
@@ -118,62 +96,26 @@ export const AccountProfileDetails = () => {
                 xs={12}
                 md={6}
               >
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  onChange={handleChange}
-                  type="number"
-                  value={values.phone}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  onChange={handleChange}
-                  required
-                  value={values.country}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Select State"
-                  name="state"
-                  onChange={handleChange}
-                  required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
-                >
-                  {states.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField>
               </Grid>
             </Grid>
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
+          
+            <Box
+              sx={{
+                marginRight: 2, marginTop: 1, opacity: opacity
+              }}
+            >
+              <CheckCircleOutlineIcon color="success" />
+            </Box>
+        
+          <Button variant="contained" onClick={handleSubmit}>
             Save details
           </Button>
         </CardActions>
       </Card>
-    </form>
+    </>
   );
 };

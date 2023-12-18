@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
 import { Slider, FormControlLabel, Switch } from "@mui/material";
-import Chart from 'chart.js/auto';
-
+import Chart from "chart.js/auto";
+import { styled } from "@mui/material/styles";
 const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
-  const [chartSize, setChartSize] = useState(600);
+  const [chartSize, setChartSize] = useState(35);
   const [showLegend, setShowLegend] = useState(false);
   const [showGridLines, setShowGridLines] = useState(true);
   const [showStack, setShowStack] = useState(false);
@@ -19,9 +19,9 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   };
   const datasets = [];
   for (let i = 1; i < data[0].length; i++) {
-    const subarray = data.map(arr => arr[i]);
+    const subarray = data.map((arr) => arr[i]);
     datasets.push({
-      label: Ylabel[i-1],
+      label: Ylabel[i - 1],
       data: subarray,
       backgroundColor: getRandomRGBAColor(),
       borderWidth: 1,
@@ -30,8 +30,8 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
 
   const chartData = useMemo(() => {
     return {
-      labels: data.map(arr => arr[0]),
-      datasets: datasets
+      labels: data.map((arr) => arr[0]),
+      datasets: datasets,
     };
   }, [data]);
 
@@ -87,52 +87,57 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
     setShowGridLines(event.target.checked);
   }, []);
 
-
   
 
   return (
-    <div className="chart-container">
-      <Slider
-        value={chartSize}
-        min={300}
-        max={1000}
-        onChange={handleSliderChange}
-        aria-labelledby="continuous-slider"
-      />
-      <FormControlLabel
-        control={<Switch checked={showLegend} onChange={handleLegendChange} />}
-        label="Show Legend"
-      />
-      <FormControlLabel
-        control={<Switch checked={showGridLines} onChange={handleGridLinesChange} />}
-        label="Show Grid Lines"
-      />
-      <FormControlLabel
-        control={<Switch checked={showStack} onChange={handleShowStack} />}
-        label="Show Stacked"
-      />
-      <div className="chart">
-        <Bar data={chartData} options={chartOptions} />
-      </div>
-      <style jsx>{`
-        .chart-container {
-          width: ${chartSize}px;
-          height: ${chartSize}px;
-          max-width: 1000px;
-          max-height: 1000px;
-          min-width: 300px;
-          min-height: 300px;
-          overflow: hidden;
-          position: relative;
-        }
-        .chart {
-          width: 100%;
-          height: 80%;
-        }
-      `}</style>
-    </div>
+    <>
+      
+      <div>
+        <Slider
+          defaultValue={35}
+          min={30}
+          max={60}
+          onChange={handleSliderChange}
+          aria-label="Chart Size"
+          style={{
+            width: "25vw",
+        }}
+        />
+        </div>
+        <FormControlLabel
+          control={<Switch checked={showLegend} onChange={handleLegendChange} />}
+          label="Show Legend"
+        />
+        <FormControlLabel
+          control={<Switch checked={showGridLines} onChange={handleGridLinesChange} />}
+          label="Show Grid Lines"
+        />
+        <FormControlLabel
+          control={<Switch checked={showStack} onChange={handleShowStack} />}
+          label="Show Stacked"
+        />
+        
+        <div className="chart">
+          <Bar
+            data={chartData}
+            options={chartOptions}
+            style={{
+              width: "100%",
+              height: "80%",
+              width: `${chartSize}vw`,
+              height: `${chartSize - 20}vw`,
+              maxWidth: "60vw",
+              maxHeight: "38vw",
+              minWidth: "30vw",
+              minHeight: "18vw",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          />
+        </div>
+      
+    </>
   );
 };
 
 export default CustomizableBarChart;
-

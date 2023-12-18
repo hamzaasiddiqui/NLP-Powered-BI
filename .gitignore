@@ -1,0 +1,21 @@
+# Ignore .vscode
+.vscode
+
+# Ignore Node.js modules
+node_modules
+
+# Ignore virtual environment
+api/.venv
+
+# Ignore Python cache
+api/__pycache__
+
+frontend/node_modules
+
+frontend/.next
+
+api/.env
+
+defog/.venv
+
+defog/__pycache__
