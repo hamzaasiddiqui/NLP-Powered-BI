@@ -7,6 +7,7 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import AddIcon from '@mui/icons-material/Add';
+import Grid from '@mui/material/Grid';
 import { auth, db } from "../firebase";
 import {
   getFirestore,
@@ -187,7 +188,7 @@ const Page = () => {
         <title>Dashboard | Keystone</title>
       </Head>
       <Container maxWidth="lg" style={{ paddingTop: 20 }}>
-        <Typography variant="h4" gutterBottom align="left" marginBottom={10}>
+        <Typography variant="h4" gutterBottom align="left" marginBottom={15} marginTop={-2}>
           Dashboard - {(openDashboard)?openDashboard.title : ''}
     
         </Typography>
@@ -287,22 +288,25 @@ const Page = () => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '80%', // Use a percentage for responsive width
-      maxWidth: '70vw', // Set a maximum width to prevent it from becoming too wide
+      // width: '80%', // Use a percentage for responsive width
+      maxWidth: '90vw', // Set a maximum width to prevent it from becoming too wide
       maxHeight: '70vh', // Set a maximum height to make it responsive and scrollable
       overflowY: 'auto', // Enable vertical scrolling when content overflows
       bgcolor: 'background.paper',
+      width: '85vw',
       boxShadow: 24,
+      marginLeft: 17,
       p: 6,
-      marginLeft: 10
     }}
   >
     
     {(openDashboard.visualizations && chartData) ? (
       <>
         {/* Display each item in the visualization array */}
+        <Grid container spacing={2}>
         {Object.entries(openDashboard.visualizations).map(([chartTitle, chartConfig]) => (
-          <div key={chartTitle}>
+
+          <Grid item xs={6} key={chartTitle}>
             <CustomizableChart
               chartType={chartConfig.type}
               data={chartData[chartTitle].data}
@@ -310,8 +314,10 @@ const Page = () => {
               Ylabel={chartConfig.yaxis}
               ChartTitle={chartTitle}
             />
-          </div>
+          </Grid>
+
         ))}
+        </Grid>
       </>
     ) : (<div>Empty</div>)}
     <Button variant="contained" onClick={handleDeleteDashboard} sx={{ mt: 2, mr: 2 }}>

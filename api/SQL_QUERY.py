@@ -10,10 +10,13 @@ import chromadb
 def SQL_QUERY(conn, schema):
     chroma_client = chromadb.Client()
     collection_name = "collection"
-
-    if collection_name in chroma_client.list_collections():
-        chroma_client.delete_collection(name=collection_name)
-        print(f"Collection '{collection_name}' deleted successfully.")
+    print(chroma_client.list_collections())
+    if chroma_client.list_collections():
+        for i in chroma_client.list_collections():
+            print(i.name)
+            if collection_name == i.name:
+                chroma_client.delete_collection(name=collection_name)
+                print(f"Collection '{collection_name}' deleted successfully.")
 
     collection = chroma_client.create_collection(name=collection_name)
     TABLES = []

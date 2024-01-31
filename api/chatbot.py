@@ -80,7 +80,7 @@ class Chatbot:
     def chatbot(self, question, model): 
         results = self.collection.query(
             query_texts=[question],
-            n_results=5
+            n_results=10
         )   
         
         NEW_SCHEMA = ''.join(results['documents'][0])

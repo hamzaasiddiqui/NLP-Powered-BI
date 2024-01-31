@@ -67,6 +67,15 @@ def api_connect_db():
 def api_disconnect_db():
     return close_db_connection()
 
+@app.route('/api/isConnected', methods=['POST'])
+def isConnected():
+    if current_app.connection:
+        print('true')
+        return {'connection':'true'}
+    else:
+        print('false')
+        return {'connection':'false'}
+
 @app.route('/api/SQL', methods=['POST'])
 def run_sql():
     schema = request.get_json().get('schema')

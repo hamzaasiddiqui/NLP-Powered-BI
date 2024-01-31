@@ -30,15 +30,8 @@ import { margin } from "@mui/system";
 import CustomizableChart from "./CustomizableChart";
 import DynamicTable from "./table";
 import { auth, db } from "../firebase";
-import { useAuth } from 'src/hooks/use-auth';
-import {
-  setDoc,
-  doc,
-  getDocs,
-  collection,
-  getDoc,
-  updateDoc
-} from "firebase/firestore";
+import { useAuth } from "src/hooks/use-auth";
+import { setDoc, doc, getDocs, collection, getDoc, updateDoc } from "firebase/firestore";
 
 axios.defaults.baseURL = "http://localhost:5000";
 var columns = null;
@@ -101,7 +94,7 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
     setSavePopupOpen(false);
   };
   const handleSaveChart = async () => {
-    const dashboardsCollection = collection(db, 'users', auth.user.id, 'dashboard');
+    const dashboardsCollection = collection(db, "users", auth.user.id, "dashboard");
     const dashboardDoc = doc(dashboardsCollection, selectedDashboard);
 
     try {
@@ -119,38 +112,35 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
       await updateDoc(dashboardDoc, {
         visualizations: newVisualization,
       });
-  
-      console.log('ChartConfig added successfully!');
-    } catch (error) {
-      console.error('Error adding chartConfig:', error);
-    }
-    
 
-  
+      console.log("ChartConfig added successfully!");
+    } catch (error) {
+      console.error("Error adding chartConfig:", error);
+    }
+
     // Close the popup after saving
     closeSavePopup();
   };
   const handleSaveButtonClick = (message) => {
     setCurrentChartConfig(message);
     openSavePopup();
-  };  
+  };
   const handleVisualizationChange = (event) => {
     setVisualization(event.target.value);
   };
 
-  
   useEffect(() => {
     const fetchUserDashboards = async () => {
       console.log(databaseUrl);
       try {
         const userDocRef = doc(db, "users", auth.user.id);
         const dashboardsSnapshot = await getDocs(collection(userDocRef, "dashboard"));
-        
+
         const dashboards = [];
         dashboardsSnapshot.forEach((dashboardDoc) => {
           const dashboardData = dashboardDoc.data();
           console.log(dashboardData);
-          
+
           if (dashboardData.databaseLink == databaseUrl) {
             dashboards.push({
               id: dashboardDoc.id,
@@ -158,7 +148,7 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
             });
           }
         });
-      console.log(dashboards);
+        console.log(dashboards);
 
         setUserDashboards(dashboards);
       } catch (error) {
@@ -168,7 +158,6 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
 
     fetchUserDashboards();
   }, [auth.user.id, databaseUrl, messages]); // Add dependencies as needed
-
 
   const handleSendMessage = async () => {
     if (isSending || newMessage.trim() === "") {
@@ -314,115 +303,20 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
                             )}
                           </AccordionDetails>
                         </Accordion>
-                      </>
-                    ) : (
-                      <Typography>{message.text}</Typography>
-                    )}
-                    {message.sender === "bot" && message.chart != null ? (
-                      <>
-                      <Button variant="contained" onClick={()=>{handleSaveButtonClick(message)}}>Save</Button>
-                      <CustomizableChart
-                        chartType={message.chart}
-                        data={message.data}
-                        Xlabel={message.Xlabel}
-                        Ylabel={message.Ylabel}
-                        ChartTitle={message.ChartTitle}
-                      />
-                      </>
-                    ) : (
-                      <></>
-                    )}
 
-                    <Typography variant="caption" color="textSecondary">
-                      {message.timestamp.toLocaleString()}
-                      <span style={{  color: "#1c2536" , marginLeft: '20px'}}>
-                      {message.model}
-                      </span>
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-          </Box>
-          <Dialog open={isSavePopupOpen} onClose={closeSavePopup}>
-  <DialogTitle>Save Chart</DialogTitle>
-  <DialogContent>
-    <TextField
-      label="Chart Title"
-      value={chartTitle}
-      onChange={(e) => setChartTitle(e.target.value)}
-      fullWidth
-      margin="normal"
-    />
-    <FormControl fullWidth margin="normal">
-            <InputLabel id="dashboard-select-label">Select Dashboard</InputLabel>
-            <Select
-              labelId="dashboard-select-label"
-              id="dashboard-select"
-              value={selectedDashboard}
-              onChange={(e) => setSelectedDashboard(e.target.value)}
-            >
-              {userDashboards.map((dashboard) => (
-                <MenuItem key={dashboard.id} value={dashboard.id}>
-                  {dashboard.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={closeSavePopup} color="primary">
-      Cancel
-    </Button>
-    <Button onClick={handleSaveChart} color="primary">
-      Save
-    </Button>
-  </DialogActions>
-</Dialog>
-          <Stack direction="row" spacing={2} alignItems="center">
-           
 
-            
-
-            {/* Select Model */}
-            <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label" size="small">
-                Select Model
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={model}
-                label="Age"
-                onChange={handleModelChange}
-              >
-                <MenuItem value="GPT3.5">GPT 3.5</MenuItem>
-                <MenuItem value="Defog">Defog</MenuItem>
-              </Select>
-            </FormControl>
-          
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              disabled={isSending}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              endIcon={<SendIcon />}
-              onClick={handleSendMessage}
-              disabled={isSending}
-            >
-              Send
-            </Button>
-          </Stack>
-
-          {columns && columns.length > 0 && (
-            <Stack direction="row" spacing={4} alignItems="center">
+                        {columns?(<>
+                        
+                          <Accordion>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <Typography>Generate Visualization</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                        <Stack direction="row" spacing={4} alignItems="center">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">
                   {chart === "Pie" || chart === "Radar" || chart === "Doughnut"
@@ -485,7 +379,127 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
               </FormControl>
               <Button onClick={handleGenerateGraph}>Generate Graph</Button>
             </Stack>
-          )}
+            </AccordionDetails>
+            </Accordion>
+                        
+                        
+                        </>):(<></>)}
+                        
+
+
+                      </>
+                    ) : (
+                      <Typography>{message.text}</Typography>
+                    )}
+                    {message.sender === "bot" && message.chart != null ? (
+                      <>
+                        <Button
+                          variant="contained"
+                          onClick={() => {
+                            handleSaveButtonClick(message);
+                          }}
+                        >
+                          Save
+                        </Button>
+                        <CustomizableChart
+                          chartType={message.chart}
+                          data={message.data}
+                          Xlabel={message.Xlabel}
+                          Ylabel={message.Ylabel}
+                          ChartTitle={message.ChartTitle}
+                        />
+                      </>
+                    ) : (
+                      <></>
+                    )}
+
+                    <Typography variant="caption" color="textSecondary">
+                      {message.timestamp.toLocaleString()}
+                      <span style={{ color: "#1c2536", marginLeft: "20px" }}>{message.model}</span>
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+          </Box>
+          <Dialog open={isSavePopupOpen} onClose={closeSavePopup}>
+            <DialogTitle>Save Chart</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Chart Title"
+                value={chartTitle}
+                onChange={(e) => setChartTitle(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="dashboard-select-label">Select Dashboard</InputLabel>
+                <Select
+                  labelId="dashboard-select-label"
+                  id="dashboard-select"
+                  value={selectedDashboard}
+                  onChange={(e) => setSelectedDashboard(e.target.value)}
+                >
+                  {userDashboards.map((dashboard) => (
+                    <MenuItem key={dashboard.id} value={dashboard.id}>
+                      {dashboard.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeSavePopup} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleSaveChart} color="primary">
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            {/* Select Model */}
+            <FormControl fullWidth size="small" style={{ width: "7vw" }}>
+              <InputLabel id="demo-simple-select-label" size="small">
+                Select Model
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={model}
+                label="Age"
+                onChange={handleModelChange}
+              >
+                <MenuItem value="GPT3.5">GPT 3.5</MenuItem>
+                <MenuItem value="Defog">Defog</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your prompt..."
+              disabled={isSending}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSendMessage();
+                }
+              }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              endIcon={<SendIcon />}
+              onClick={handleSendMessage}
+              disabled={isSending}
+            >
+              Send
+            </Button>
+          </Stack>
+
+         
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
