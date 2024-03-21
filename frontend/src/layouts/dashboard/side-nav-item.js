@@ -48,7 +48,7 @@ export const SideNavItem = (props) => {
               color: 'neutral.400',
               display: 'inline-flex',
               justifyContent: 'center',
-              mr: 2,
+              mr: 4,
               ...(active && {
                 color: 'primary.main'
               })

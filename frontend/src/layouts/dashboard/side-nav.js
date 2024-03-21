@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import PropTypes from 'prop-types';
 import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
 import ChevronUpDownIcon from '@heroicons/react/24/solid/ChevronUpDownIcon';
+import { ChevronRight, ChevronLeft } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -17,11 +18,25 @@ import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { items } from './config';
 import { SideNavItem } from './side-nav-item';
+import { useState } from 'react';
 
 export const SideNav = (props) => {
+  const [ navWidth, setNavWidth ] = useState(280)
+  const [ nameHide, setNameHide ] = useState(false)
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
+
+  function toggleNavWidth() {
+    if (navWidth == 280) {
+      setNavWidth(80)
+      setNameHide(true)
+    }
+    else {
+      setNavWidth(280)
+      setNameHide(false)
+    }
+  }
 
   const content = (
     <Scrollbar
@@ -42,7 +57,12 @@ export const SideNav = (props) => {
           height: '100%'
         }}
       >
-        <Box sx={{ p: 3 }}>
+        <Box
+          sx={{ 
+            p: 3,
+            display: 'flex' 
+          }}
+        >
           <Box
             component={NextLink}
             href="/"
@@ -54,29 +74,19 @@ export const SideNav = (props) => {
           >
             <Logo />
           </Box>
-          <Box
-            sx={{
-              alignItems: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              borderRadius: 1,
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              mt: 2,
-              p: '12px'
-            }}
-          >
-            <div>
-              <Typography
-                color="inherit"
-                variant="subtitle1"
+          {
+            !nameHide && (
+              <Box
+                sx={{
+                  mt: 0,
+                  ml: 3,
+                  fontSize: '20px'
+                }}
               >
-                Keystone
-              </Typography>
-              
-            </div>
-            
-          </Box>
+                NLP-Powered BI
+              </Box>
+            )
+          }
         </Box>
         <Divider sx={{ borderColor: 'neutral.700' }} />
         <Box
@@ -113,6 +123,47 @@ export const SideNav = (props) => {
             })}
           </Stack>
         </Box>
+        {
+              !nameHide && (
+                <Box
+                  sx={{
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    mt: 2,
+                    mx: 2,
+                    p: '12px'
+                  }}
+                >
+                  <div>
+                    <Typography
+                      color="inherit"
+                      variant="subtitle1"
+                    >
+                      Powered By Keystone
+                    </Typography>
+                  </div>
+                </Box>
+              )
+            }
+            <Box
+              component="span"
+              sx={{
+                alignItems: 'center',
+                display: 'inline-flex',
+                justifyContent: 'center'
+              }}
+            >
+              <Button variant="text" style={{margin: '10px', width: '100vw' }} onClick={toggleNavWidth} >
+                {nameHide ?
+                  (<ChevronRight />) :
+                  (<ChevronLeft />)
+                }
+              </Button>
+            </Box>
         <Divider sx={{ borderColor: 'neutral.700' }} />
         
       </Box>
@@ -128,7 +179,7 @@ export const SideNav = (props) => {
           sx: {
             backgroundColor: 'neutral.800',
             color: 'common.white',
-            width: 280
+            width: navWidth
           }
         }}
         variant="permanent"
