@@ -90,6 +90,7 @@ export const AccountProfileDetails = () => {
                   onChange={handleChange}
                   required
                   value={values.email}
+                  disabled
                 />
               </Grid>
               <Grid

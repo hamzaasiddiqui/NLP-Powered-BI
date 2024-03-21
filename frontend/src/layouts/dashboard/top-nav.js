@@ -18,7 +18,7 @@ import { usePopover } from 'src/hooks/use-popover';
 import { AccountPopover } from './account-popover';
 import { useAuth } from 'src/hooks/use-auth';
 
-const SIDE_NAV_WIDTH = 280;
+const SIDE_NAV_WIDTH = 1090;
 const TOP_NAV_HEIGHT = 64;
 
 export const TopNav = (props) => {
@@ -32,13 +32,13 @@ export const TopNav = (props) => {
       <Box
         component="header"
         sx={{
-          backdropFilter: 'blur(6px)',
-          backgroundColor: (theme) => alpha(theme.palette.background.default, 0.8),
-          position: 'sticky',
+          backdropFilter: 'blur(0px)',
+          backgroundColor: "transparent",
+          position: 'fixed',
           left: {
             lg: `${SIDE_NAV_WIDTH}px`
           },
-          top: 0,
+          bottom: 0,
           width: {
             lg: `calc(100% - ${SIDE_NAV_WIDTH}px)`
           },

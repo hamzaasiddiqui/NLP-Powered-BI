@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { useAuth } from 'src/hooks/use-auth';
 import axios from "axios";
+import { ChevronRight } from "@mui/icons-material";
 
 import CustomizableChart from "../components/CustomizableChart";
 
@@ -188,9 +189,22 @@ const Page = () => {
         <title>Dashboard | Keystone</title>
       </Head>
       <Container maxWidth="lg" style={{ paddingTop: 20 }}>
-        <Typography variant="h4" gutterBottom align="left" marginBottom={15} marginTop={-2}>
-          Dashboard - {(openDashboard)?openDashboard.title : ''}
-    
+        <Typography variant="h4" marginTop={-2} >
+          Dashboard {(openDashboard)? '| ' + openDashboard.title : ''}
+        </Typography>
+        <Typography variant="h5" marginTop={15}>
+          Getting Started:
+        </Typography>
+        <Typography variant="h6">
+          <br></br><br></br>
+          <ChevronRight />
+          Create a new dashboard by selecting 'Add New' from below
+          <br></br><br></br>
+          <ChevronRight />
+          Select any dashboard from below
+          <br></br><br></br>
+          <ChevronRight />
+          Or Create a new dashboard by selecting 'Add New' from below
         </Typography>
       </Container>
 
@@ -282,53 +296,60 @@ const Page = () => {
       </Modal>
       {/* Dashboard content */}
       {openDashboard && (
-  <Box
-    sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      // width: '80%', // Use a percentage for responsive width
-      maxWidth: '90vw', // Set a maximum width to prevent it from becoming too wide
-      maxHeight: '70vh', // Set a maximum height to make it responsive and scrollable
-      overflowY: 'auto', // Enable vertical scrolling when content overflows
-      bgcolor: 'background.paper',
-      width: '85vw',
-      boxShadow: 24,
-      marginLeft: 17,
-      p: 6,
-    }}
-  >
-    
-    {(openDashboard.visualizations && chartData) ? (
-      <>
-        {/* Display each item in the visualization array */}
-        <Grid container spacing={2}>
-        {Object.entries(openDashboard.visualizations).map(([chartTitle, chartConfig]) => (
+        <Box
+          sx={{
+            position: 'absolute',
+            // width: '80%', // Use a percentage for responsive width
+            // maxWidth: '90vw', // Set a maximum width to prevent it from becoming too wide
+            // maxHeight: '100vh', // Set a maximum height to make it responsive and scrollable
+            overflowY: 'auto', // Enable vertical scrolling when content overflows
+            bgcolor: 'background.paper',
+            width: 'calc(100vh $(navWidth))',
+            boxShadow: 24,
+            marginLeft: 0,
+            p: 6,
+            top: '50px',
+          }}
+        >
+          
+          {(openDashboard.visualizations && chartData) ? (
+            <>
+              {/* Display each item in the visualization array */}
+              <Grid container spacing={2}>
+              {Object.entries(openDashboard.visualizations).map(([chartTitle, chartConfig]) => (
 
-          <Grid item xs={6} key={chartTitle}>
-            <CustomizableChart
-              chartType={chartConfig.type}
-              data={chartData[chartTitle].data}
-              Xlabel={chartConfig.xaxis}
-              Ylabel={chartConfig.yaxis}
-              ChartTitle={chartTitle}
-            />
-          </Grid>
+                <Grid item xs={6} key={chartTitle}>
+                  <CustomizableChart
+                    chartType={chartConfig.type}
+                    data={chartData[chartTitle].data}
+                    Xlabel={chartConfig.xaxis}
+                    Ylabel={chartConfig.yaxis}
+                    ChartTitle={chartTitle}
+                  />
+                </Grid>
 
-        ))}
-        </Grid>
-      </>
-    ) : (<div>Empty</div>)}
-    <Button variant="contained" onClick={handleDeleteDashboard} sx={{ mt: 2, mr: 2 }}>
-      Delete Dashboard
-    </Button>
-    <Button variant="contained" onClick={handleCloseDashboard} sx={{ mt: 2 }}>
-      Close Dashboard
-    </Button>
-  </Box>
-)}
- 
+              ))}
+              </Grid>
+            </>
+          ) : (
+            <div sx={{
+              height: '100vh',
+              width: '100vw',
+              justifyContent: 'center'
+            }}>
+              <div>Fetching Database Content ...</div>
+              <div>Parsing Database Content ...</div>
+              <div>Loading Dashboard Content ...</div>
+            </div>
+            )}
+            <Button variant="contained" onClick={handleCloseDashboard} sx={{ mt: 2, mr: 2 }}>
+              Close Dashboard
+            </Button>
+            <Button variant="contained" color="error" onClick={handleDeleteDashboard} sx={{ mt: 2}}>
+              Delete Dashboard
+            </Button>
+        </Box>
+      )}
     </>
   );
 };

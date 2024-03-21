@@ -21,19 +21,19 @@ import { SideNavItem } from './side-nav-item';
 import { useState } from 'react';
 
 export const SideNav = (props) => {
-  const [ navWidth, setNavWidth ] = useState(280)
+  // const [ navWidth, setNavWidth ] = useState(280)
   const [ nameHide, setNameHide ] = useState(false)
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
 
   function toggleNavWidth() {
-    if (navWidth == 280) {
-      setNavWidth(80)
+    if (props.navWidth == 280) {
+      props.setNavWidth(80)
       setNameHide(true)
     }
     else {
-      setNavWidth(280)
+      props.setNavWidth(280)
       setNameHide(false)
     }
   }
@@ -179,7 +179,7 @@ export const SideNav = (props) => {
           sx: {
             backgroundColor: 'neutral.800',
             color: 'common.white',
-            width: navWidth
+            width: props.navWidth
           }
         }}
         variant="permanent"

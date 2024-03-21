@@ -7,12 +7,12 @@ import { TopNav } from './top-nav';
 
 const SIDE_NAV_WIDTH = 280;
 
-const LayoutRoot = styled('div')(({ theme }) => ({
+const LayoutRoot = styled('div')(({ theme, navWidth }) => ({
   display: 'flex',
   flex: '1 1 auto',
   maxWidth: '100%',
   [theme.breakpoints.up('lg')]: {
-    paddingLeft: SIDE_NAV_WIDTH
+    paddingLeft: navWidth
   }
 }));
 
@@ -24,6 +24,7 @@ const LayoutContainer = styled('div')({
 });
 
 export const Layout = withAuthGuard((props) => {
+  const [ navWidth, setNavWidth ] = useState(280)
   const { children } = props;
   const pathname = usePathname();
   const [openNav, setOpenNav] = useState(false);
@@ -47,16 +48,18 @@ export const Layout = withAuthGuard((props) => {
 
   return (
     <>
-      <TopNav onNavOpen={() => setOpenNav(true)} />
       <SideNav
         onClose={() => setOpenNav(false)}
         open={openNav}
+        navWidth={navWidth}
+        setNavWidth={setNavWidth}
       />
-      <LayoutRoot>
-        <LayoutContainer>
+      <LayoutRoot navWidth={navWidth}>
+        <LayoutContainer navWidth={navWidth}>
           {children}
         </LayoutContainer>
       </LayoutRoot>
+      <TopNav onNavOpen={() => setOpenNav(true)} />
     </>
   );
 });

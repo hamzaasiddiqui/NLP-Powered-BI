@@ -3,6 +3,7 @@ import CogIcon from '@heroicons/react/24/solid/CogIcon';
 import LockClosedIcon from '@heroicons/react/24/solid/LockClosedIcon';
 import Bolt from '@heroicons/react/24/solid/BoltIcon';
 import UserIcon from '@heroicons/react/24/solid/UserIcon';
+import { CreditCard } from '@mui/icons-material';
 import UserPlusIcon from '@heroicons/react/24/solid/UserPlusIcon';
 import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import XCircleIcon from '@heroicons/react/24/solid/XCircleIcon';
@@ -14,7 +15,7 @@ export const items = [
     path: '/',
     icon: (
       <SvgIcon fontSize="small">
-        <ChartBarIcon />
+        <CreditCard />
       </SvgIcon>
     )
   },
