@@ -26,7 +26,7 @@ export const SideNavItem = (props) => {
           borderRadius: 1,
           display: 'flex',
           justifyContent: 'flex-start',
-          pl: '16px',
+          pl: '14px',
           pr: '16px',
           py: '6px',
           textAlign: 'left',
@@ -57,26 +57,28 @@ export const SideNavItem = (props) => {
             {icon}
           </Box>
         )}
-        <Box
-          component="span"
-          sx={{
-            color: 'neutral.400',
-            flexGrow: 1,
-            fontFamily: (theme) => theme.typography.fontFamily,
-            fontSize: 14,
-            fontWeight: 600,
-            lineHeight: '24px',
-            whiteSpace: 'nowrap',
-            ...(active && {
-              color: 'common.white'
-            }),
-            ...(disabled && {
-              color: 'neutral.500'
-            })
-          }}
-        >
-          {title}
-        </Box>
+        { !props.nameHide && (
+          <Box
+            component="span"
+            sx={{
+              color: 'neutral.400',
+              flexGrow: 1,
+              fontFamily: (theme) => theme.typography.fontFamily,
+              fontSize: 14,
+              fontWeight: 600,
+              lineHeight: '24px',
+              whiteSpace: 'nowrap',
+              ...(active && {
+                color: 'common.white'
+              }),
+              ...(disabled && {
+                color: 'neutral.500'
+              })
+            }}
+          >
+            {title}
+          </Box>
+        ) }
       </ButtonBase>
     </li>
   );

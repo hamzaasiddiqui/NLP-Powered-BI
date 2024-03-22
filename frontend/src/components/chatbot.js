@@ -459,8 +459,8 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
 
           <Stack direction="row" spacing={2} alignItems="center">
             {/* Select Model */}
-            <FormControl fullWidth size="small" style={{ width: "7vw" }}>
-              <InputLabel id="demo-simple-select-label" size="small">
+            <FormControl fullWidth size="medium" style={{ width: "10vw" }}>
+              <InputLabel id="demo-simple-select-label" size="medium">
                 Select Model
               </InputLabel>
               <Select
