@@ -20,6 +20,7 @@ from langchain.agents.format_scratchpad.openai_tools import (
     format_to_openai_tool_messages,
 )
 from langchain.agents import AgentExecutor
+from langchain_core.messages import AIMessage, HumanMessage
 
 connection_ = None
 schema_ = None
@@ -67,6 +68,7 @@ class Chatbot:
         self.collection, self.SCHEMA = SQL_QUERY.SQL_QUERY(conn, schema)
         self.connection = conn
         self.memory = ConversationBufferWindowMemory(k=3, memory_key="chat_history")
+        self.chat_history = []
         global connection_, schema_
         schema_ = schema
         connection_ = conn
@@ -162,7 +164,7 @@ Response:
   - Donot make up table and column names by yourself. 
   """,
       ),
-      
+      MessagesPlaceholder(variable_name='chat_history'),
       ("user", "{input}"),
       MessagesPlaceholder(variable_name="agent_scratchpad"),
       
@@ -178,6 +180,7 @@ Response:
                     "agent_scratchpad": lambda x: format_to_openai_tool_messages(
                         x["intermediate_steps"]
                     ),
+                    "chat_history": lambda x: x["chat_history"],
                     
                 }
                 | prompt
@@ -186,10 +189,16 @@ Response:
             )
             # self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
             agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-            sql_query = agent_executor.invoke({"input": question})
-            print(sql_query)
+            sql_query = agent_executor.invoke({"input": question, "chat_history": self.chat_history})
+            
             sql_query = sql_query['output'].split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
-            print(sql_query)
+            
+            self.chat_history.extend(
+                [
+                    HumanMessage(content=question),
+                    AIMessage(content=sql_query),
+                ]
+            )
         elif model == "Defog":
             
             defog = Defog.Defog(question, NEW_SCHEMA, self.memory.load_memory_variables({}))
