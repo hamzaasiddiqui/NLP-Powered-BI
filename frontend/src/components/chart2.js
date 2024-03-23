@@ -42,20 +42,10 @@ const ResizableChart = ({ chartData }) => {
       break;
   }
 
-  // Function to handle slider change
-  const handleSliderChange = (event, newValue) => {
-    setChartSize(newValue);
-  };
+
 
   return (
     <div className="chart-container">
-      <Slider
-        value={chartSize}
-        min={200}
-        max={1000}
-        onChange={handleSliderChange}
-        aria-labelledby="continuous-slider"
-      />
       <div className="chart">
         <ChartElement data={data || {}} options={options || {}} />
       </div>

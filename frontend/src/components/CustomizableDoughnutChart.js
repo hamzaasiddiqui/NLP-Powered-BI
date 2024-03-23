@@ -55,13 +55,7 @@ const CustomizableDoughnutChart = ({ data, ChartTitle }) => {
 
   return (
     <div className="chart-container">
-      <Slider
-        value={chartSize}
-        min={300}
-        max={1000}
-        onChange={handleSliderChange}
-        aria-labelledby="continuous-slider"
-      />
+      
       <FormControlLabel
         control={<Switch checked={showLegend} onChange={handleLegendChange} />}
         label="Show Legend"

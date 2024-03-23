@@ -18,8 +18,13 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
     return `rgba(${r},${g},${b},${a})`;
   };
   const datasets = [];
+  
   for (let i = 1; i < data[0].length; i++) {
     const subarray = data.map((arr) => arr[i]);
+    
+    if(typeof subarray[0] !== 'number'){
+      continue;
+    }
     datasets.push({
       label: Ylabel[i - 1],
       data: subarray,
@@ -93,16 +98,7 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
     <>
       
       <div>
-        <Slider
-          defaultValue={35}
-          min={30}
-          max={60}
-          onChange={handleSliderChange}
-          aria-label="Chart Size"
-          style={{
-            width: "25vw",
-        }}
-        />
+        
         </div>
         <FormControlLabel
           control={<Switch checked={showLegend} onChange={handleLegendChange} />}
