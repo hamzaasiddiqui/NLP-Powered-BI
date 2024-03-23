@@ -1,47 +1,75 @@
-from langchain.chat_models import ChatOpenAI
+
 from langchain import OpenAI
 import os
 import sqlalchemy
 from langchain.chains import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
-from schema import execute_query
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from schema import execute_query as exec_query
+from langchain_openai import ChatOpenAI
 import SQL_QUERY
-import numpy as np
 import Defog
 import sqlparse
-from prompt_formatters import Formatter
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain.tools import BaseTool, StructuredTool, tool
+import psycopg2
+from psycopg2 import extensions
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.agents.output_parsers.openai_tools import OpenAIToolsAgentOutputParser
+from langchain.agents.format_scratchpad.openai_tools import (
+    format_to_openai_tool_messages,
+)
+from langchain.agents import AgentExecutor
+
+connection_ = None
+schema_ = None
+
+@tool
+def execute_query(query: str) -> str:
+    """Executes SQL Query on Database and returns the first 3 results if successfull else it return the error message"""
+    global connection_, schema_
+    connection = connection_
+    
+    try:
+        if connection.get_transaction_status() == extensions.TRANSACTION_STATUS_INTRANS:
+            connection.rollback()
+
+        # Add the schema to the query
+        schema = schema_
+        query_with_schema = f"SET search_path TO {schema}; {query}"
+
+        cursor = connection.cursor()
+        cursor.execute(query_with_schema)
+        result = cursor.fetchall()
+        cursor.close()
+        return result[:3]
+    except psycopg2.Error as e:
+        error_code = e.pgcode
+        error_message = str(e)
+        connection.rollback()
+        if error_code:
+            if error_code == '42P01':  # Table not found error
+                return f"ERROR: Table not found: {error_message}"
+            else:
+                return f"ERROR: PostgreSQL Error ({error_code}): {error_message}"
+        else:
+            return f"ERROR: PostgreSQL Error: {error_message}"
+    except Exception as e:
+        connection.rollback()
+        return f"ERROR: Database Error: {str(e)}"
 
 
 class Chatbot:
     def __init__(self, openai_api_key, conn, schema):
+        
         self.schema = schema
         self.openai_api_key = openai_api_key
-        # self.SQL_QUERY_PROMPT, self.SCHEMA = SQL_QUERY.SQL_QUERY(conn)
         self.collection, self.SCHEMA = SQL_QUERY.SQL_QUERY(conn, schema)
         self.connection = conn
-        # self.prompt = ChatPromptTemplate.from_messages([
-        #     SystemMessage(content=self.SQL_QUERY_PROMPT), # The persistent system prompt
-        #     MessagesPlaceholder(variable_name="chat_history"), # Where the memory will be stored.
-        #     HumanMessagePromptTemplate.from_template("{instruction}"), # Where the human input will injected
-        # ])
-
         self.memory = ConversationBufferWindowMemory(k=3, memory_key="chat_history")
-    def make_table(self, res, size=1):
-        max_name_length = max(len(name) for name, _ in res)
-        table_str = ""
-        for i in range(size):
-            if i >= len(res):
-                break
-            name, number = res[i]
-            row = f"| {name:<{max_name_length}} | {number} |\n"
-            table_str += row
-        return table_str
+        global connection_, schema_
+        schema_ = schema
+        connection_ = conn
     
     def extract_columns_from_query(self, query):
         parsed = sqlparse.parse(query)
@@ -107,12 +135,61 @@ New human question: {instruction}
 Response:
 """ 
         self.prompt = PromptTemplate.from_template(self.template)
+
             
         if model == "GPT3.5":
-            self.llm = ChatOpenAI(temperature=0.5, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
-            self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
-            sql_query = self.SQL_CHAIN.predict(instruction = question)
-            sql_query = sql_query.split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
+
+            self.llm = ChatOpenAI(temperature=0.2, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
+            tools = [execute_query]
+            prompt = ChatPromptTemplate.from_messages(
+  [
+      (
+          "system",
+          f"""
+  {NEW_SCHEMA}\n\n\nUsing valid SQL for Postgres, answer the following question for the SCHEMA provided above. 
+
+  Your job is to create a valid SQL code and then you need to run the query, If the query runs successfully, you must return the SQL code only.
+  If there is an error then you need to resolve the error and write a new SQL query and then execute it again. You must run the query first to check if it is correct.
+  If the Query runs successfully, You should review the results to check if the query you wrote was logically correct.  
+  Folow the following rules:
+  - You should only run SELECT queries. (Donot update or delete anything from database)
+  - The SQL Query should only contain the columns that are provided above.
+  - SQL Query must not contain the columns that are not present in the Table which you are referring. 
+  - The SQL Query should respect the case and consider columns and tables as case-sensitive
+  - The SQL Query should use quotes around table and column names containing uppercase characters
+  - Pay attention to use CURRENT_DATE function to get the current date, if the question involves "today"
+  - Your response should be a SQL query and nothing else.
+  - Donot make up table and column names by yourself. 
+  """,
+      ),
+      
+      ("user", "{input}"),
+      MessagesPlaceholder(variable_name="agent_scratchpad"),
+      
+  ]
+)
+            llm_with_tools = self.llm.bind_tools(tools)
+
+           
+
+            agent = (
+                {
+                    "input": lambda x: x["input"],
+                    "agent_scratchpad": lambda x: format_to_openai_tool_messages(
+                        x["intermediate_steps"]
+                    ),
+                    
+                }
+                | prompt
+                | llm_with_tools
+                | OpenAIToolsAgentOutputParser()
+            )
+            # self.SQL_CHAIN = LLMChain(llm=self.llm, prompt=self.prompt, memory=self.memory, verbose=True)
+            agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+            sql_query = agent_executor.invoke({"input": question})
+            print(sql_query)
+            sql_query = sql_query['output'].split("```sql")[-1].split("```")[0].split(";")[0].strip() + ";"
+            print(sql_query)
         elif model == "Defog":
             
             defog = Defog.Defog(question, NEW_SCHEMA, self.memory.load_memory_variables({}))
@@ -122,13 +199,9 @@ Response:
       
         columns = self.extract_columns_from_query(sql_query)
        
-        result = execute_query(sql_query, self.connection, self.schema) 
+        result = exec_query(sql_query, self.connection, self.schema) 
         
         
         res = [list(tuple_item) for tuple_item in result]
     
         return {'SQL_QUERY': sql_query, 'DATA': res, 'columns' : columns}
-
-
-
-
