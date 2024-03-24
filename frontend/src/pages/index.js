@@ -3,8 +3,9 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { Container, Typography, Grid, Card, CardContent, Table, TableContainer, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { LineChart, Line, PieChart, Pie, Cell, RadialBarChart, RadialBar } from "recharts";
-
-
+import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
+import UserIcon from "@heroicons/react/24/solid/UserIcon";
+import { Bolt } from "@mui/icons-material";
 
 const now = new Date();
 
@@ -52,9 +53,76 @@ const Page = () => {
       </Head>
       <Container maxWidth="lg" style={{ paddingTop: 20 }}>
         <Typography variant="h4" gutterBottom align="center" marginBottom={10}>
-          Welcome to Keystone Dashboard
+          Welcome to NLP-Powered Business Intelligence
         </Typography>
-        <Grid container spacing={3}>
+        <Card>
+          <Typography variant="h6" align="center" marginBottom={5} marginTop={5} >
+            Curate customized BI dashboards and reports through Artificial Intelligence
+          </Typography>
+
+          <Grid container>
+            <Grid item xs={4} marginBottom={2} paddingLeft={1} >
+              <Card variant="outlined">
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Dashboard Management
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                • Create new dashboards or open existing ones.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                • View real-time data analytics or reports (AI-generated visualization) to get complete overview of company anaytics at a glance.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                • Delete dashboards or make new ones
+                </Typography>
+              </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={4} marginBottom={2} paddingLeft={2} >
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="div">
+                    Chatbot Interface
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Connect the chatbot to a database by providing new credentials or use saved credentials.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Give chatbot prompts to retrieve data and generate visualization.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Give axis labels and chart title and save the visualization to the dashboard of your choice.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={4} marginBottom={2} paddingLeft={2} paddingRight={1} >
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="div">
+                    User Settings
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Control you avatar.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Change your username.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                  • Change your password.
+                  </Typography>
+                </CardContent>
+              </Card>  
+            </Grid>
+          </Grid>
+        </Card>
+
+        <Typography variant="h6" align="center" marginTop={6}>
+          Example Dashboard Below
+        </Typography>
+        
+        <Grid container spacing={3} marginTop={3}>
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
@@ -62,7 +130,7 @@ const Page = () => {
                   Favourite Charts
                 </Typography>
                 <ResponsiveContainer width="100%" height={300}>
-              {/* Bar Chart */}
+
               <BarChart data={favoriteChartsData}>
                 <XAxis dataKey="name" />
                 <YAxis dataKey="value" type="number" />
@@ -74,7 +142,7 @@ const Page = () => {
               </BarChart>
             </ResponsiveContainer>
                  <ResponsiveContainer width="100%" height={300}>
-              {/* Line Chart */}
+
               <LineChart data={favoriteChartsData}>
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -87,7 +155,7 @@ const Page = () => {
             
 
             <ResponsiveContainer width="100%" height={300}>
-              {/* Radial Bar Chart */}
+
               <RadialBarChart innerRadius={20} outerRadius={140} data={favoriteChartsData}>
                 <RadialBar startAngle={90} endAngle={-270} minAngle={15} label background clockWise dataKey="value">
                   {favoriteChartsData.map((entry, index) => (
