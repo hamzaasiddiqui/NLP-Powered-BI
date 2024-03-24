@@ -61,7 +61,7 @@ const Page = () => {
           </Typography>
 
           <Grid container>
-            <Grid item xs={4} marginBottom={2} paddingLeft={1} >
+            <Grid item xs={4} marginBottom={2} paddingLeft={2} >
               <Card variant="outlined">
               <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
@@ -97,7 +97,7 @@ const Page = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={4} marginBottom={2} paddingLeft={2} paddingRight={1} >
+            <Grid item xs={4} marginBottom={2} paddingLeft={2} paddingRight={2} >
               <Card variant="outlined">
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
