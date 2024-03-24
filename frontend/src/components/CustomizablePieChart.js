@@ -4,7 +4,7 @@ import { Slider, FormControlLabel, Switch } from "@mui/material";
 import Chart from 'chart.js/auto';
 
 const CustomizablePieChart = ({ data, ChartTitle }) => {
-  const [chartSize, setChartSize] = useState(600);
+  const [chartSize, setChartSize] = useState(32);
   const [showLegend, setShowLegend] = useState(false);
 
   const getRandomRGBAColor = () => {
@@ -53,32 +53,43 @@ const CustomizablePieChart = ({ data, ChartTitle }) => {
   }, []);
 
   return (
-    <div className="chart-container">
-      
-      <FormControlLabel
-        control={<Switch checked={showLegend} onChange={handleLegendChange} />}
-        label="Show Legend"
-      />
-      <div className="chart">
-        <Pie data={chartData} options={chartOptions} />
+    <>
+      <div
+        // sx={{
+        //   width: '100%',
+        //   display: 'flex',
+        //   justifyContent: 'center'
+        // }}
+        style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px'}}
+      >
+        <b>{ChartTitle}</b>
       </div>
-      <style jsx>{`
-        .chart-container {
-          width: ${chartSize}px;
-          height: ${chartSize}px;
-          max-width: 1000px;
-          max-height: 1000px;
-          min-width: 300px;
-          min-height: 300px;
-          overflow: hidden;
-          position: relative;
-        }
-        .chart {
-          width: 100%;
-          height: 78%;
-        }
-      `}</style>
-    </div>
+      <div className="chart-container">
+        <FormControlLabel
+          control={<Switch checked={showLegend} onChange={handleLegendChange} />}
+          label="Show Legend"
+        />
+        <div className="chart">
+          <Pie data={chartData} options={chartOptions} />
+        </div>
+        <style jsx>{`
+          .chart-container {
+            width: ${chartSize}vw;
+            height: ${chartSize}vw;
+            max-width: 1000px;
+            max-height: 1000px;
+            min-width: 300px;
+            min-height: 300px;
+            overflow: hidden;
+            position: relative;
+          }
+          .chart {
+            width: 100%;
+            height: 78%;
+          }
+        `}</style>
+      </div>
+    </>
   );
 };
 

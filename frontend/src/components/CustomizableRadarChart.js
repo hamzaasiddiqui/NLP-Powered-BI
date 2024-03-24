@@ -4,7 +4,7 @@ import { Slider, FormControlLabel, Switch } from "@mui/material";
 import Chart from 'chart.js/auto';
 
 const CustomizableRadarChart = ({ data, ChartTitle }) => {
-  const [chartSize, setChartSize] = useState(600);
+  const [chartSize, setChartSize] = useState(32);
   const [showLegend, setShowLegend] = useState(false);
   const [showGridLines, setShowGridLines] = useState(true);
 
@@ -76,6 +76,17 @@ const CustomizableRadarChart = ({ data, ChartTitle }) => {
   }, [showLegend, showGridLines, ChartTitle]);
 
   return (
+    <>
+    <div
+          // sx={{
+          //   width: '100%',
+          //   display: 'flex',
+          //   justifyContent: 'center'
+          // }}
+          style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px'}}
+        >
+          <b>{ChartTitle}</b>
+        </div>
     <div className="chart-container">
       
       <FormControlLabel
@@ -91,8 +102,8 @@ const CustomizableRadarChart = ({ data, ChartTitle }) => {
       </div>
       <style jsx>{`
         .chart-container {
-          width: ${chartSize}px;
-          height: ${chartSize}px;
+          width: ${chartSize}vw;
+          height: ${chartSize}vw;
           max-width: 1000px;
           max-height: 1000px;
           min-width: 300px;
@@ -106,6 +117,7 @@ const CustomizableRadarChart = ({ data, ChartTitle }) => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 

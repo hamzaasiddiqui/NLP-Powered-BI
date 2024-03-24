@@ -3,7 +3,7 @@ import { Scatter } from "react-chartjs-2";
 import { Slider, FormControlLabel, Switch } from "@mui/material";
 
 const CustomizableScatterPlot = ({ data, ChartTitle, Xlabel, Ylabel }) => {
-  const [chartSize, setChartSize] = useState(600);
+  const [chartSize, setChartSize] = useState(32);
   const [showLegend, setShowLegend] = useState(false);
 
   const handleSliderChange = useCallback((event, newValue) => {
@@ -73,7 +73,16 @@ const CustomizableScatterPlot = ({ data, ChartTitle, Xlabel, Ylabel }) => {
 
   return (
     <div className="chart-container">
-      
+      <div
+          // sx={{
+          //   width: '100%',
+          //   display: 'flex',
+          //   justifyContent: 'center'
+          // }}
+          style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px'}}
+        >
+          <b>{ChartTitle}</b>
+        </div>
       <FormControlLabel
         control={<Switch checked={showLegend} onChange={handleLegendChange} />}
         label="Show Legend"
@@ -83,8 +92,8 @@ const CustomizableScatterPlot = ({ data, ChartTitle, Xlabel, Ylabel }) => {
       </div>
       <style jsx>{`
         .chart-container {
-          width: ${chartSize}px;
-          height: ${chartSize}px;
+          width: ${chartSize}vw;
+          height: ${chartSize}vw;
           max-width: 1000px;
           max-height: 1000px;
           min-width: 300px;

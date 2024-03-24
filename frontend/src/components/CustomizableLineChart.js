@@ -4,7 +4,7 @@ import { Slider, FormControlLabel, Switch } from "@mui/material";
 import Chart from 'chart.js/auto';
 
 const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
-  const [chartSize, setChartSize] = useState(600);
+  const [chartSize, setChartSize] = useState(32);
   const [showLegend, setShowLegend] = useState(false);
   const [showGridLines, setShowGridLines] = useState(true);
   const [showFill, setShowFill] = useState(false);
@@ -17,6 +17,8 @@ const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   };
   // Memoize chart data and options to avoid recalculation on every render
   const chartData = useMemo(() => {
+    console.log(data.map(([_, data]) => data))
+    console.log(data.map(([labels, _]) => labels))
     return {
       labels: data.map(([labels, _]) => labels),
       datasets: [
@@ -88,6 +90,17 @@ const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   }, []);
 
   return (
+    <>
+    <div
+          // sx={{
+          //   width: '100%',
+          //   display: 'flex',
+          //   justifyContent: 'center'
+          // }}
+          style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '20px'}}
+        >
+          <b>{ChartTitle}</b>
+        </div>
     <div className="chart-container">
       
       <FormControlLabel
@@ -107,8 +120,8 @@ const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
       </div>
       <style jsx>{`
         .chart-container {
-          width: ${chartSize}px;
-          height: ${chartSize}px;
+          width: ${chartSize}vw;
+          height: ${chartSize}vw;
           max-width: 1000px;
           max-height: 1000px;
           min-width: 300px;
@@ -122,6 +135,7 @@ const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 
