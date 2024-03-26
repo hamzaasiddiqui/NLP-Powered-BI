@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { logInWithEmailAndPassword, logout, auth , registerWithEmailAndPassword, db} from "./../firebase";
+import { logInWithEmailAndPassword, logout, auth , registerWithEmailAndPassword, db, sendPasswordReset} from "./../firebase";
 import {
   getDoc,
   doc,
@@ -167,13 +167,24 @@ export const AuthProvider = (props) => {
     });
   };
 
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordReset(email);
+      console.log('Password reset email sent.');
+    } catch (error) {
+      console.error(error);
+      throw new Error ('Please check your email address');
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
         ...state,
         signIn,
         signUp,
-        signOut
+        signOut,
+        resetPassword
       }}
     >
       {children}

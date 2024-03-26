@@ -171,6 +171,22 @@ const Page = () => {
                 >
                   Continue
                 </Button>
+                  <Typography
+                  color="text.secondary"
+                  variant="body2"
+                  marginTop={2}
+                >
+                  Forgot your password?
+                  &nbsp;
+                  <Link
+                    component={NextLink}
+                    href="/auth/passwordReset"
+                    underline="hover"
+                    variant="subtitle2"
+                  >
+                    Reset Password
+                  </Link>
+                </Typography>
                 
                 
               </form>
