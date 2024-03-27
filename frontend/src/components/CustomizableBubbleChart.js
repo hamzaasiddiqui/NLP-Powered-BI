@@ -20,7 +20,7 @@ const CustomizableBubbleChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
     return {
       datasets: [
         {
-          label: "Dataset",
+          label: Ylabel,
           data: data.map(([x, y, r]) => ({ x, y, r })),
           backgroundColor: data.map(() => getRandomRGBAColor()),
           borderColor: data.map(() => getRandomRGBAColor()),

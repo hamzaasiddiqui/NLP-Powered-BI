@@ -23,15 +23,38 @@ def extract_columns_from_query(query):
         
         # Join tokens to form the portion between SELECT and FROM
         select_portion = str(sqlparse.sql.TokenList(select_tokens))
+        print(type(select_portion))
+        print(select_portion)
 
         # Strip any leading/trailing whitespace and comma
-        select_portion = select_portion.strip().strip(',')
+        
 
-        columns = select_portion.split(',')
+        columns = select_portion
         columns = [column.strip() for column in columns]
+        print(columns)
+        selected_columns = []
+        for col in columns:
+            parts = col.split()
+            if 'AS' in parts:
+                index = parts.index('AS')
+                col_ = parts[index + 1].strip('"')
+                col_ = col_.strip("'")
+                selected_columns.append(col_)
+            else:
+                col_ = parts[0].split('.')[-1].strip('"')
+                col_ = col_.strip("'")
+                selected_columns.append(col_)
+            
 
-    return columns
+        # Output the selected column names
+        print("Selected Columns:")
+        for name in selected_columns:
+            print(name)
 
-sql_query = "SELECT product_name, SUM(quantity) as total_quantity, abc FROM order_details JOIN products ON order_details.product_id = products.product_id GROUP BY product_name ORDER BY total_quantity DESC LIMIT 5;"
+    return selected_columns
+    
+
+
+sql_query = "SELECT product_name, SUM(quantity) as total_quantity JOIN products ON order_details.product_id = products.product_id GROUP BY product_name ORDER BY total_quantity DESC LIMIT 5;"
 columns = extract_columns_from_query(sql_query)
 print("Column Names:", columns)

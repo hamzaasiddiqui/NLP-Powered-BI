@@ -1,5 +1,5 @@
 import requests
-defog_url = "http://10.1.141.134:5000/run_defog"
+defog_url = "http://10.1.141.155:5000/run_defog"
 
 class Defog:
     def __init__(self, question, schema, memory) -> None:

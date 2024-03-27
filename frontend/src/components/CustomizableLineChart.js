@@ -23,7 +23,7 @@ const CustomizableLineChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
       labels: data.map(([labels, _]) => labels),
       datasets: [
         {
-          label: "Dataset",
+          label: Ylabel,
           data: data.map(([_, data]) => data),
           fill: showFill,
           backgroundColor: getRandomRGBAColor(),

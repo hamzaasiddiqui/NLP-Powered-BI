@@ -96,14 +96,35 @@ class Chatbot:
             
             # Join tokens to form the portion between SELECT and FROM
             select_portion = str(sqlparse.sql.TokenList(select_tokens))
+            print(type(select_portion))
+            print(select_portion)
 
             # Strip any leading/trailing whitespace and comma
-            select_portion = select_portion.strip().strip(',')
+            
 
-            columns = select_portion.split(',')
+            columns = select_portion
             columns = [column.strip() for column in columns]
+            print(columns)
+            selected_columns = []
+            for col in columns:
+                parts = col.split()
+                if 'AS' in parts:
+                    index = parts.index('AS')
+                    col_ = parts[index + 1].strip('"')
+                    col_ = col_.strip("'")
+                    selected_columns.append(col_)
+                else:
+                    col_ = parts[0].split('.')[-1].strip('"')
+                    col_ = col_.strip("'")
+                    selected_columns.append(col_)
+                
 
-        return columns
+            # Output the selected column names
+            print("Selected Columns:")
+            for name in selected_columns:
+                print(name)
+
+        return selected_columns
     
 
 
@@ -141,7 +162,7 @@ Response:
             
         if model == "GPT3.5":
 
-            self.llm = ChatOpenAI(temperature=0.2, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
+            self.llm = ChatOpenAI(temperature=0, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
             tools = [execute_query]
             prompt = ChatPromptTemplate.from_messages(
   [
@@ -153,6 +174,7 @@ Response:
   Your job is to create a valid SQL code and then you need to run the query, If the query runs successfully, you must return the SQL code only.
   If there is an error then you need to resolve the error and write a new SQL query and then execute it again. You must run the query first to check if it is correct.
   If the Query runs successfully, You should review the results to check if the query you wrote was logically correct.  
+  Always include 2 or more columns to make SQL query.
   Folow the following rules:
   - You should only run SELECT queries. (Donot update or delete anything from database)
   - The SQL Query should only contain the columns that are provided above.
@@ -205,9 +227,27 @@ Response:
             sql_query = defog.run()
             self.memory.chat_memory.add_user_message(question)
             self.memory.chat_memory.add_ai_message(sql_query)
-      
-        columns = self.extract_columns_from_query(sql_query)
-       
+
+        sql_template = f"""
+User will give you an SQL query and you need to extract the column names from it.
+Your response should only be a python list of column names
+
+for example:
+    SQL QUERY = SELECT product_name, SUM(quantity) as total_quantity JOIN products ON order_details.product_id = products.product_id GROUP BY product_name ORDER BY total_quantity DESC LIMIT 5;
+    Response = [product_name, total_quantity]
+
+Below is the provided SQL QUERY 
+SQL QUERY: {sql_query}
+Response:
+"""
+        sql_prompt = PromptTemplate.from_template(sql_template)
+        llm = ChatOpenAI(temperature=0, openai_api_key=self.openai_api_key, model='gpt-3.5-turbo')
+        sql_chain = LLMChain(llm=llm, prompt=sql_prompt, verbose=False)
+        columns = sql_chain.predict(sql_query = sql_query)
+        columns = columns.strip('[]').split(', ')
+        columns = [item.strip('"') for item in columns]
+        print(columns)
+        
         result = exec_query(sql_query, self.connection, self.schema) 
         
         

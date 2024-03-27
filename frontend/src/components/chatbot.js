@@ -37,26 +37,27 @@ axios.defaults.baseURL = "http://localhost:5000";
 var columns = null;
 var SQL_QUERY = null;
 let DATA = null;
-function selectColumns(inputArray, columnIndex1) {
+
+
+function selectColumns(inputArray, columnIndex1, columnIndex2) {
   if (!Array.isArray(inputArray) || inputArray.length === 0) {
     throw new Error("Invalid input array");
   }
 
-  if (!Number.isInteger(columnIndex1) || columnIndex1 < 0 || columnIndex1 >= inputArray[0].length) {
-    throw new Error("Invalid column index");
-  }
-  const copyOfData = inputArray.slice();
-  for (let i = 0; i < copyOfData.length; i++) {
-    if (columnIndex1 >= 0 && columnIndex1 < copyOfData[i].length) {
-      [copyOfData[i][columnIndex1], copyOfData[i][0]] = [
-        copyOfData[i][0],
-        copyOfData[i][columnIndex1],
-      ];
-    }
-    [columns[0], columns[columnIndex1]] = [columns[columnIndex1], columns[0]];
+  if (
+    !Number.isInteger(columnIndex1) ||
+    !Number.isInteger(columnIndex2) ||
+    columnIndex1 < 0 ||
+    columnIndex2 < 0 ||
+    columnIndex1 >= inputArray[0].length ||
+    columnIndex2 >= inputArray[0].length
+  ) {
+    throw new Error("Invalid column indexes");
   }
 
-  return copyOfData;
+  const resultArray = inputArray.map((row) => [row[columnIndex1], row[columnIndex2]]);
+  
+  return resultArray;
 }
 
 const Chatbot = ({ setIsConnected, databaseUrl }) => {
@@ -74,10 +75,16 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
   const [selectedDashboard, setSelectedDashboard] = useState("");
   const [userDashboards, setUserDashboards] = useState([]);
   const [currentChartConfig, setCurrentChartConfig] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   const handleXAxisChange = (event) => {
     setXAxis(event.target.value);
   };
+  
   const handleYAxisChange = (event) => {
     setYAxis(event.target.value);
   };
@@ -218,11 +225,26 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
     console.log("After disconnection call");
   };
 
+  function checkSecondElement(data) {
+    for (let sublist of data) {
+      if (typeof sublist[1] !== 'number') {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+
   const handleGenerateGraph = (event) => {
     console.log(XAxis);
     console.log(YAxis);
-    const data = selectColumns([...DATA], XAxis);
-    console.log(data);
+    const data = selectColumns([...DATA], XAxis, YAxis);
+    if(!checkSecondElement(data)){
+      setOpenDialog(true);
+      console.error("Error: Not all Y-axis values are numbers.");
+      return;
+    }
+
     const newBotMessage = {
       id: messages.length + 1,
       timestamp: new Date(),
@@ -230,7 +252,7 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
       chart: chart,
       data: data,
       Xlabel: columns[XAxis],
-      Ylabel: columns.filter((element, i) => i !== XAxis),
+      Ylabel: columns[YAxis],
       ChartTitle: "Chart",
       SQL_QUERY: SQL_QUERY,
     };
@@ -378,6 +400,15 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
                 </Select>
               </FormControl>
               <Button onClick={handleGenerateGraph}>Generate Graph</Button>
+              <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>Error</DialogTitle>
+                <DialogContent>
+                    Y-axis should be a number.
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>OK</Button>
+                </DialogActions>
+            </Dialog>
             </Stack>
             </AccordionDetails>
             </Accordion>

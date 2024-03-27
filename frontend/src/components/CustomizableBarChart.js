@@ -19,24 +19,17 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   };
   const datasets = [];
   
-  for (let i = 1; i < data[0].length; i++) {
-    const subarray = data.map((arr) => arr[i]);
-    
-    if(typeof subarray[0] !== 'number'){
-      continue;
-    }
-    datasets.push({
-      label: Ylabel[i - 1],
-      data: subarray,
-      backgroundColor: getRandomRGBAColor(),
-      borderWidth: 1,
-    });
-  }
-
   const chartData = useMemo(() => {
     return {
-      labels: data.map((arr) => arr[0]),
-      datasets: datasets,
+      labels: data.map(([labels, _]) => labels),
+      datasets: [
+        {
+          label: Ylabel,
+          data: data.map(([_, data]) => data),
+          backgroundColor: getRandomRGBAColor(),
+          borderWidth: 1,
+        },
+      ],
     };
   }, [data]);
 
@@ -62,21 +55,21 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
           grid: {
             display: showGridLines,
           },
-          stacked: showStack,
+         
         },
         y: {
           title: {
             display: true,
-            text: "Y-Axis",
+            text: Ylabel,
           },
           grid: {
             display: showGridLines,
           },
-          stacked: showStack,
+       
         },
       },
     };
-  }, [showLegend, showGridLines, showStack, Xlabel, Ylabel, ChartTitle]);
+  }, [showLegend, showGridLines, Xlabel, Ylabel, ChartTitle]);
 
   const handleSliderChange = useCallback((event, newValue) => {
     setChartSize(newValue);
@@ -85,9 +78,7 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
   const handleLegendChange = useCallback((event) => {
     setShowLegend(event.target.checked);
   }, []);
-  const handleShowStack = useCallback((event) => {
-    setShowStack(event.target.checked);
-  }, []);
+  
   const handleGridLinesChange = useCallback((event) => {
     setShowGridLines(event.target.checked);
   }, []);
@@ -114,10 +105,7 @@ const CustomizableBarChart = ({ data, Xlabel, Ylabel, ChartTitle }) => {
           control={<Switch checked={showGridLines} onChange={handleGridLinesChange} />}
           label="Show Grid Lines"
         />
-        <FormControlLabel
-          control={<Switch checked={showStack} onChange={handleShowStack} />}
-          label="Show Stacked"
-        />
+        
         
         <div className="chart">
           <Bar

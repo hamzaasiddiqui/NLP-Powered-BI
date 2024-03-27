@@ -27,7 +27,7 @@ const CustomizableScatterPlot = ({ data, ChartTitle, Xlabel, Ylabel }) => {
     return {
       datasets: [
         {
-          label: "Dataset",
+          label: Ylabel,
           data: data.map(([x, y]) => ({ x, y })),
           backgroundColor: getRandomRGBAColor(),
           borderColor: getRandomRGBAColor(),
