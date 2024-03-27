@@ -233,13 +233,22 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
     }
     return true;
   }
+
+  function checkFirstElement(data) {
+    for (let sublist of data) {
+      if (typeof sublist[0] !== 'number') {
+        return false;
+      }
+    }
+    return true;
+  }
   
 
   const handleGenerateGraph = (event) => {
     console.log(XAxis);
     console.log(YAxis);
     const data = selectColumns([...DATA], XAxis, YAxis);
-    if(!checkSecondElement(data)){
+    if(!checkSecondElement(data) || (chart ==="Scatter" && !checkFirstElement(data))){
       setOpenDialog(true);
       console.error("Error: Not all Y-axis values are numbers.");
       return;
@@ -403,7 +412,7 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
               <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Error</DialogTitle>
                 <DialogContent>
-                    Y-axis should be a number.
+                    Selected Axis should be a number
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog}>OK</Button>
