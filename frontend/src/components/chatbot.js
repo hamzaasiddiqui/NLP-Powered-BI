@@ -227,7 +227,9 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
 
   function checkSecondElement(data) {
     for (let sublist of data) {
-      if (typeof sublist[1] !== 'number') {
+      const a = parseFloat(sublist[1])
+      if (typeof a !== 'number') {
+        console.log("not number: ", sublist[1])
         return false;
       }
     }
@@ -236,7 +238,8 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
 
   function checkFirstElement(data) {
     for (let sublist of data) {
-      if (typeof sublist[0] !== 'number') {
+      const a = parseFloat(sublist[0])
+      if (typeof a !== 'number') {
         return false;
       }
     }
@@ -248,7 +251,8 @@ const Chatbot = ({ setIsConnected, databaseUrl }) => {
     console.log(XAxis);
     console.log(YAxis);
     const data = selectColumns([...DATA], XAxis, YAxis);
-    if(!checkSecondElement(data) || (chart ==="Scatter" && !checkFirstElement(data))){
+    console.log("asdasd", checkSecondElement(data))
+    if(!checkSecondElement(data) || (chart === "Scatter" && !checkFirstElement(data))){
       setOpenDialog(true);
       console.error("Error: Not all Y-axis values are numbers.");
       return;

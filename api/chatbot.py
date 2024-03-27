@@ -250,7 +250,6 @@ Response:
         
         result = exec_query(sql_query, self.connection, self.schema) 
         
-        
         res = [list(tuple_item) for tuple_item in result]
     
         return {'SQL_QUERY': sql_query, 'DATA': res, 'columns' : columns}
