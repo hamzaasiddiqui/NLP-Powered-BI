@@ -9,7 +9,7 @@
 
 An end-to-end Business Intelligence application that lets users query relational data in natural language, convert those requests into SQL, and transform query results into interactive dashboards and visual analytics.
 
-This project was developed as a **BS Computer Science Final Year Project** and is designed as a proof of concept for making BI systems more accessible to non-technical users. Instead of writing SQL manually, a user can ask questions conversationally, inspect the generated query, preview the returned data, and save charts to custom dashboards.
+This project was developed as a **Final Year Project** and is designed as a proof of concept for making BI systems more accessible to non-technical users. Instead of writing SQL manually, a user can ask questions conversationally, inspect the generated query, preview the returned data, and save charts to custom dashboards.
 
 ## Live Demo
 
