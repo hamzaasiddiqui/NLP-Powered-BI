@@ -19,9 +19,11 @@ This project was developed as a **BS Computer Science Final Year Project** and i
 
 ## Demo Preview
 
-Click the banner below to open the project walkthrough video:
+<video src="docs/assets/NLP-Powered-BI-App_Video.mp4" controls width="100%">
+  Your browser does not support the video tag.
+</video>
 
-[![Watch the demo video](docs/assets/banner.png)](docs/assets/NLP-Powered-BI-App_Video.mp4)
+If the embedded player does not render on your platform, open the video directly: [NLP-Powered-BI-App_Video.mp4](docs/assets/NLP-Powered-BI-App_Video.mp4)
 
 ## Why This Project Matters
 
@@ -224,6 +226,3 @@ From an academic perspective, it demonstrates how conversational interfaces can 
 
 For the full academic write-up, methodology, and discussion, see [Thesis.pdf](Thesis.pdf).
 
-## License
-
-This repository currently does not include an explicit license. If you plan to share it publicly for admissions, portfolio, or open-source use, adding a license file would be a good next step.
