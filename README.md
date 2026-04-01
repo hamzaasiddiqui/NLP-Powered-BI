@@ -23,7 +23,7 @@ This project was developed as a **Final Year Project** and is designed as a proo
   Your browser does not support the video tag.
 </video>
 
-If the embedded player does not render on your platform, open the video directly: [NLP-Powered-BI-App_Video.mp4](docs/assets/NLP-Powered-BI-App_Video.mp4)
+Demo Video: [NLP-Powered-BI-App_Video.mp4](docs/assets/NLP-Powered-BI-App_Video.mp4)
 
 ## Why This Project Matters
 
